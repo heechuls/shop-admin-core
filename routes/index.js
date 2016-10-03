@@ -1,12 +1,13 @@
 var express = require('express');
 var router = express.Router();
+var path = require('path');
 
 /* GET home page. */
-router.get('/', function(req, res, next) {
-  //res.render('index', { title: 'Express' });
-  console.log("index.js");
-  router.user_list_all(req, res);
-  res.sendFile("index.htm");
+router.get('/', function(req, res, next) {  
+  var app = require('../app.js');
+  app.user_list_all(req, res);
+  res.sendFile(path.join(__dirname, '../public/templates', 'index.html'));
+  //res.send("Hello World");
 });
 
 module.exports = router;

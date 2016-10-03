@@ -1,0 +1,40 @@
+<md-dialog aria-label="교구">
+    <form ng-cloak>
+        <md-dialog-content style="padding:10px">
+            <md-toolbar>
+                <div class="md-toolbar-tools">
+                    <h4>
+                        <span>상품 특성 변경</span>
+                    </h4>
+                </div>
+            </md-toolbar>
+            <div layout="row" layout-wrap>
+                <div flex="100" layout="column">
+                    <div>
+                        <fieldset class="demo-fieldset">
+                            <div layout="row" layout-wrap flex>
+                                <div flex-xs flex="50">
+                                    <md-checkbox aria-label="Select All" ng-checked="isChecked()" md-indeterminate="isIndeterminate()" ng-click="toggleAll()">
+                                        <span ng-if="isChecked()">Un-</span>Select All
+                                    </md-checkbox>
+                                </div>
+                                <div class="demo-select-all-checkboxes" flex="100" ng-repeat="item in items">
+                                    <md-checkbox ng-checked="exists(item, selected)" ng-click="toggle(item, selected)">
+                                        {{ item }}
+                                    </md-checkbox>
+                                </div>
+                            </div>
+                        </fieldset>
+                    </div>
+                </div>
+            </div>
+        </md-dialog-content>
+        <md-dialog-actions layout="row" style="float:right">
+            <md-button ng-click="close()" class="md-raised">
+                취소
+            </md-button>
+            <md-button ng-click="change()" class="md-raised md-primary">
+                추가
+            </md-button>
+        </md-dialog-actions>
+</md-dialog>

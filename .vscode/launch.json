@@ -1,7 +1,7 @@
 {
     "version": "0.2.0",
     "configurations": [
-{
+        {
             "name": "Launch",
             "type": "node",
             "request": "launch",
@@ -17,7 +17,7 @@
             "env": {
                 "NODE_ENV": "development"
             },
-            "externalConsole": false,
+            "console": "internalConsole",
             "sourceMaps": false,
             "outDir": null
         },
@@ -46,15 +46,15 @@
             "name": "Launch localhost with sourcemaps",
             "type": "chrome",
             "request": "launch",
-            "url": "http://localhost:3000/index.html",
-            "webRoot": "${workspaceRoot}/app/files",
+            "url": "http://localhost:3000/",
+            "webRoot": "${workspaceRoot}/",
             "sourceMaps": true
         },
         {
             "name": "Launch index.html (without sourcemaps)",
             "type": "chrome",
             "request": "launch",
-            "file": "${workspaceRoot}/index.html"
+            "file": "${workspaceRoot}/app.js"
         }
     ]
 }
