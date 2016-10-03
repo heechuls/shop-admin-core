@@ -1,0 +1,44 @@
+<!-- Using Angular Material 6.1 + Jade Templates-->
+<html>
+
+<div ng-app="shopAdminCore" ng-controller="userController">
+  <table st-table="rowCollection" class="table table-striped">
+    <thead>
+      <tr>
+        <th>가입일</th>
+        <th st-sort="kidsSchoolName">어린이집명</th>
+        <th>보유교구</th>
+        <th>필요교구</th>
+        <th>보유교구사진</th>
+        <th>상세보기</th>
+        <th>누리박스</th>
+      </tr>
+      <tr>
+        <th/>
+        <th colspan="1">
+          <input st-search placeholder="어린이집 검색" class="input-sm form-control" type="search" />
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr ng-repeat="row in rowCollection" styel="text-align:center">
+        <td>{{row.registeredDate}}</td>
+        <td>{{row.kidsSchoolName}}</td>
+        <td>{{row.noOfEquippedTools}}</td>
+        <td>{{row.noOfNeededTools}}</td>
+        <td>{{row.noOfEquippedToolImages}}</td>
+        <td style="color:blue;text-decoration: underline" ng-click="showTools(row)">{{row.detail}}</td>
+        <td style="color:blue;text-decoration: underline" ng-click="showNuribox(row)">{{row.nuribox}}</td>
+      </tr>
+    </tbody>
+    <tfoot>
+      <tr>
+        <td colspan="7" class="text-center">
+          <div st-pagination="" st-items-by-page="itemsByPage" st-displayed-pages="7"></div>
+        </td>
+      </tr>
+    </tfoot>
+  </table>
+</div>
+
+</html>

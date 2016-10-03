@@ -1,0 +1,31 @@
+body {
+  margin-top: 50px;
+  padding: 50px;
+  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+}
+
+a {
+  color: #00B7FF;
+}
+.shopAdminCore{
+  margin-top: 40px;
+}
+.shopAdminCore md-content {
+  background-color: white !important;
+  padding: 30px; }
+  .shopAdminCore md-content md-tabs {
+    background: #f6f6f6;
+    border: 1px solid #e1e1e1; }
+    .shopAdminCore md-content md-tabs md-tabs-wrapper {
+      background: white; }
+  .shopAdminCore md-content h1:first-child {
+    margin-top: 0; }
+
+.loginBox {
+  max-width:  90%;
+  width: 500px
+}
+
+.stretch input  {
+  width: 100%
+}

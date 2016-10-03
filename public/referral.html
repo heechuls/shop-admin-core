@@ -1,0 +1,36 @@
+<!-- Using Angular Material 6.1 + Jade Templates-->
+<html>
+
+<div ng-app="shopAdminCore" ng-controller="referralController">
+  <table st-table="rowCollection" class="table table-striped">
+    <thead>
+      <tr>
+        <th>구분</th>
+        <th>가입일</th>
+        <th>회원</th>
+        <th>추천인</th>
+        <th>유료회원전환여부</th>
+        <th>쿠폰적용</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr ng-repeat="row in rowCollection" styel="text-align:center">
+        <td>{{row.no}}</td>
+        <td>{{row.registeredDate}}</td>
+        <td>{{row.kidsSchoolName}}</td>
+        <td>{{row.recommendingKidsSchoolName}}</td>
+        <td>{{row.isPaidUser}}</td>
+        <td>{{row.isCouponApplied}}</td>
+      </tr>
+    </tbody>
+    <tfoot>
+      <tr>
+        <td colspan="5" class="text-center">
+          <div st-pagination="" st-items-by-page="itemsByPage" st-displayed-pages="7"></div>
+        </td>
+      </tr>
+    </tfoot>
+  </table>
+</div>
+
+</html>

@@ -1,0 +1,114 @@
+<md-dialog aria-label="교구">
+    <form ng-cloak>
+        <md-dialog-content style="padding:10px">
+            <md-button ng-click="createNuribox()" class="md-raised" style="float: left;">누리박스 생성</md-button>
+            <p style="margin-left:20px;margin-top:20px float: left;">매월 25일 자동생성</p>
+            <md-toolbar style="width:100%">
+                <div class="md-toolbar-tools">
+                    <h4>
+                        <span>이번달 누리박스</span>
+                    </h4>
+                </div>
+            </md-toolbar>
+            <style type="text/css">
+                .tg {
+                    border-collapse: collapse;
+                    border-spacing: 0;
+                    border-color: #999;
+
+                }
+                
+                .tg td {
+                    font-family: Arial, sans-serif;
+                    font-size: 14px;
+                    padding: 10px 5px;
+                    border-style: solid;
+                    border-width: 1px;
+                    overflow: hidden;
+                    word-break: normal;
+                    border-color: #999;
+                    color: #444;
+                    background-color: #F7FDFA;
+                }
+                
+                .tg th {
+                    font-family: Arial, sans-serif;
+                    font-size: 14px;
+                    font-weight: normal;
+                    padding: 10px 5px;
+                    border-style: solid;
+                    border-width: 1px;
+                    overflow: hidden;
+                    word-break: normal;
+                    border-color: #999;
+                    color: #fff;
+                    background-color: #26ADE4;
+                }
+                
+                .tg .tg-e9v8 {
+                    font-size: 15px;
+                    text-align: center;
+                    vertical-align: top
+                }
+                
+                .tg .tg-e9v9 {
+                    font-size: 15px;
+                    text-align: center;
+                    vertical-align: top;
+                    background-color: #20ADE4
+                }
+            </style>
+            <table class="tg">
+                <tr>
+                    <th class="tg-e9v9">카테고리</th>
+                    <th class="tg-e9v8">Status</th>
+                    <th class="tg-e9v8">1차 필터링</th>
+                    <th class="tg-e9v8">2차 필터링</th>
+                    <th class="tg-e9v8">3차 필터링</th>
+                    <th class="tg-e9v8">누리박스</th>
+                    <th class="tg-e9v8">비고</th>
+                </tr>
+                <tr>
+                    <td class="tg-e9v9">성교육인형</td>
+                    <td class="tg-e9v8"></td>
+                    <td class="tg-e9v8"></td>
+                    <td class="tg-e9v8"></td>
+                </tr>
+                <tr>
+                    <td class="tg-e9v9">미용놀이</td>
+                    <td class="tg-e9v8"></td>
+                    <td class="tg-e9v8"></td>
+                    <td class="tg-e9v8"></td>
+                </tr>
+                <tr>
+                    <td class="tg-e9v9">음악</td>
+                    <td class="tg-e9v8"></td>
+                    <td class="tg-e9v8"></td>
+                    <td class="tg-e9v8"></td>
+                </tr>
+                <tr>
+                    <td class="tg-e9v9">미술교구</td>
+                    <td class="tg-e9v8"></td>
+                    <td class="tg-e9v8"></td>
+                    <td class="tg-e9v8"></td>
+                </tr>
+                <tr>
+                    <td class="tg-e9v9">과학교구</td>
+                    <td class="tg-e9v8"></td>
+                    <td class="tg-e9v8"></td>
+                    <td class="tg-e9v8"></td>
+                </tr>
+                <tr>
+                    <td class="tg-e9v9">블럭류</td>
+                    <td class="tg-e9v8"></td>
+                    <td class="tg-e9v8"></td>
+                    <td class="tg-e9v8"></td>
+                </tr>
+            </table>
+        <md-dialog-actions layout="row">
+            <md-button ng-click="answer('useful')">
+                닫기
+            </md-button>
+        </md-dialog-actions>
+    </form>
+</md-dialog>

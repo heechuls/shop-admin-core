@@ -1,0 +1,34 @@
+<md-dialog aria-label="교구">
+    <form ng-cloak>
+        <md-dialog-content style="padding:10px">
+            <md-toolbar>
+                <div class="md-toolbar-tools">
+                    <h4>
+                        <span>교구 추가</span>
+                    </h4>
+                </div>
+            </md-toolbar>
+            <md-input-container>
+                <label>교구</label>
+                <md-select ng-model="selectedToolCategory" flex-gt-sm="">
+                    <md-option ng-repeat="tool in tools">
+                        {{tool.name}}
+                    </md-option>
+                    <md-option><em>기타</em></md-option>
+                </md-select>
+            </md-input-container>
+            <md-input-container class="md-block" flex-gt-sm="">
+                <label>교구명</label>
+                <input ng-model="toolName">
+            </md-input-container>
+
+        </md-dialog-content>
+        <md-dialog-actions layout="row">
+            <md-button ng-click="close()" class="md-raised">
+                취소
+            </md-button>
+            <md-button ng-click="add()" class="md-raised md-primary">
+                추가
+            </md-button>
+        </md-dialog-actions>
+</md-dialog>
