@@ -8,6 +8,8 @@ var GLOBALS = {
     TOOL_FEATURE_PRICE : 4,
     TOOL_FEATURE_SAFETY : 8,
 
+    TOOL_FEATURES : new Array(1, 2, 4, 8),
+
     API_HOME : '/api/',
 
     getListToolFeatures : function(feature_flag){

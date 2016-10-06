@@ -2,7 +2,6 @@
 <html>
 
 <div ng-app="shopAdminCore" ng-controller="productController"" ng-init="fetchInitialData()">
-  <md-button class="md-raised" style="float: right;">추가</md-button>
   <table st-table="rowCollection" class="table table-striped">
     <thead>
       <tr>
@@ -23,7 +22,7 @@
         <td>{{row.category}}</td>
         <td>{{row.goodsnm}}</td>
         <td>{{row.goodsno}}</td>
-        <td  style="color:blue;text-decoration: underline" ng-click="changeFeatures(row, $event)">{{row.toolFeatures}}</td>
+        <td  style="color:blue;text-decoration: underline" ng-click="changeFeatures(row, $event)">{{row.toolFeaturesTxt}}</td>
       </tr>
     </tbody>
     <tfoot>

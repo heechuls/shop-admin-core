@@ -4,10 +4,6 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
-
-var routes = require('./routes/index');
-var users = require('./routes/users');
-
 var GLOBALS = require('./public/javascripts/globals.js').GLOBALS;
 
 var app = express();
@@ -36,6 +32,11 @@ var db_connection = db_godomall;
 
 var db = mysql.createConnection( db_connection );
 
+module.exports = app;
+module.exports.user_list_all = user_list_all;
+module.exports.__dirname = __dirname;
+module.exports.db = db;
+
 // uncomment after placing your favicon in /public
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 app.use(logger('dev'));
@@ -44,9 +45,14 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+var routes = require('./routes/index');
+var users = require('./routes/users');
+var api = require('./routes/apis');
+
 app.use('/templates', express.static('/public/templates'));
 app.use('/', routes);
 app.use('/users', users);
+app.use('/apis', api);
 
 var handleDisconnect = function() {
 	db.on('error', function (err) {
@@ -113,6 +119,20 @@ app.get(GLOBALS.API_HOME + 'user-list-all/', function (req, res) {
 	});
 });
 
+app.get(GLOBALS.API_HOME + 'user-list/:search', function (req, res) {
+	var search = req.params.search;
+
+	db.query('SELECT m_no, name, regdt FROM gd_member WHERE name LIKE "' + search + '" ORDER BY m_no', function (err, rows, fields) {
+		if (err) {
+			console.log(new Date());
+			console.log(err);
+			res.send(err);
+		} else {
+            res.send(rows);
+		}
+	});
+});
+
 //추천인 있는 사용자 목록
 app.get(GLOBALS.API_HOME + 'recomm-list/', function (req, res) {
 	var userno = req.params.userno;
@@ -147,7 +167,7 @@ app.get(GLOBALS.API_HOME + 'category-list/', function (req, res) {
 app.get(GLOBALS.API_HOME + 'tool-list/', function (req, res) {
 	var userno = req.params.userno;
 
-	db.query('SELECT goodsno, goodsnm, tool_features FROM gd_goods' , function (err, rows, fields) {
+	db.query('Select goodsno, goodsnm, tool_features, catnm FROM (SELECT A.goodsno, A.goodsnm, A.tool_features, B.category FROM gd_goods A LEFT JOIN gd_goods_link B ON A.goodsno = B.goodsno GROUP BY A.goodsno) C, gd_category D WHERE C.category = D.category' , function (err, rows, fields) {
 		if (err) {
 			console.log(new Date());
 			console.log(err);
@@ -158,6 +178,23 @@ app.get(GLOBALS.API_HOME + 'tool-list/', function (req, res) {
 	});
 });
 
+// 교구 특성 업데이트
+app.post(GLOBALS.API_HOME + 'change-features/', function (req, res) {
+
+	var data = {
+		tool_features : req.body.tool_features,
+		goodsno : req.body.goodsno
+	};
+	db.query('UPDATE gd_goods SET tool_features = ' + data.tool_features + ' WHERE goodsno = ' + data.goodsno, function (err, result) {
+		if (err) {
+			console.log(new Date());
+			console.log(err);
+			res.send(err);
+		} else {
+			res.send(result);
+		}
+	});
+});
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -232,7 +269,3 @@ app.use(function(err, req, res, next) {
 app.listen(process.env.PORT || 3000, function () {
 	console.log('talktudy app running on port 3000');
 });
-
-module.exports = app;
-module.exports.user_list_all = user_list_all;
-module.exports.__dirname = __dirname;

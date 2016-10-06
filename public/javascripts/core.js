@@ -70,7 +70,7 @@ app.config(function($stateProvider, $urlRouterProvider) {
         var dataSet = [];
         for (var i in response.data) {
             var data = {
-                registeredDate: response.data[i].regdt,
+                registeredDate: response.data[i].regdt.substring(0, 10),
                 kidsSchoolName: response.data[i].name,
                 noOfEquippedTools : "2개",
                 noOfNeededTools : "3개",
@@ -93,14 +93,31 @@ app.config(function($stateProvider, $urlRouterProvider) {
         }, function errorCallback(response) {
             // called asynchronously if an error occurs
             // or server returns response with an error status.
-        });	}
+        });	
+    }
+
+    $scope.search = function (searchKeyword) {
+        if(searchKeyword == null || searchKeyword.length == 0){
+            alert("어린이집 이름을 입력해주세요.");
+            return;
+        }
+        $http({
+            method: 'GET',
+            url: GLOBALS.API_HOME + 'user-list/' + searchKeyword
+        }).then(function successCallback(response) {
+            convertData(response);
+        }, function errorCallback(response) {
+            // called asynchronously if an error occurs
+            // or server returns response with an error status.
+        });	
+    }
 
 	$scope.itemsByPage=15;
 
     /*for (var j = 0; j < 30; j++) {
         $scope.rowCollection.push(createRandomItem());
     }*/
-
+    
     $scope.detail = function(row){
         alert(row.toString());
     }
@@ -110,6 +127,9 @@ app.config(function($stateProvider, $urlRouterProvider) {
             controller: ToolsDialogController,
             templateUrl: 'templates/tools.html',
             parent: angular.element(document.body),
+            locals: {
+                showTools: $scope.showTools
+            },
             targetEvent: ev,
             clickOutsideToClose: true,
             fullscreen: $scope.customFullscreen // Only for -xs, -sm breakpoints.
@@ -126,8 +146,7 @@ app.config(function($stateProvider, $urlRouterProvider) {
         });
     };
 
-    function ToolsDialogController($scope, $mdDialog) {
-        $scope.tools = [{name: "성교육인형"}, {name: "병원놀이"}];
+    function ToolsDialogController($scope, $mdDialog, showTools) {
         $scope.hide = function () {
             $mdDialog.hide();
         };
@@ -145,37 +164,50 @@ app.config(function($stateProvider, $urlRouterProvider) {
                 controller: AddToolController,
                 templateUrl: 'templates/addtool.html',
                 parent: ToolsDialogController,
-                locals: {local:$scope.showTools},
+                locals: {
+                    showTools : showTools
+                },
                 targetEvent: ev,
                 clickOutsideToClose: true,
                 fullscreen: $scope.customFullscreen // Only for -xs, -sm breakpoints.
             });
         };
     }
-    function AddToolController($scope, $mdDialog, local) {
-        //alert($scope.selectedToolCategory + $scope.toolName);
-        $scope.selectedToolCategory = 0;
+    function AddToolController($scope, $mdDialog, showTools) {
+        $scope.tools = [];
+        $scope.selectedToolCategory = null;
+        $scope.toolName = '';
+
+        $scope.fetchInitialData = function () {
+            $http({
+                method: 'GET',
+                url: GLOBALS.API_HOME + 'category-list'
+            }).then(function successCallback(response) {
+                convertData(response);
+            }, function errorCallback(response) {
+            });	
+        };
+
+        function convertData(response) {
+            var dataSet = [];
+            for (var i in response.data) {
+                var data = {
+                    catnm: response.data[i].catnm,
+                    sno: response.data[i].sno,
+                };
+                dataSet.push(data);
+            }
+            $scope.tools = dataSet;
+        };
 
         $scope.close = function(){
             $mdDialog.hide();
-            $scope.showTools();
+            showTools(null);
         };
 
-        $scope.add = function(){
+        $scope.add = function(tool, toolName){
             $mdDialog.hide();
-            $scope.showTools(null);
-            //$scope.local[0].showTools(null);
-        };
-
-        $scope.showTools = function (ev) {
-            $mdDialog.show({
-                controller: ToolsDialogController,
-                templateUrl: 'templates/tools.html',
-                parent: angular.element(document.body),
-                targetEvent: ev,
-                clickOutsideToClose: true,
-                fullscreen: $scope.customFullscreen // Only for -xs, -sm breakpoints.
-            });
+            showTools(null);
         };
     }
     function NuriboxDialogController($scope, $mdDialog) {
@@ -203,10 +235,11 @@ app.config(function($stateProvider, $urlRouterProvider) {
         var dataSet = [];
         for (var i in response.data) {
             var data = {
-                category : "성교육인형",
+                category : response.data[i].catnm,
                 goodsno: response.data[i].goodsno,
                 goodsnm: response.data[i].goodsnm,
-                toolFeatures : GLOBALS.getListToolFeatures(response.data[i].tool_features),
+                toolFeatures: response.data[i].tool_features,
+                toolFeaturesTxt : GLOBALS.getListToolFeatures(response.data[i].tool_features),
             };
             dataSet.push(data);
             //console.log(data);
@@ -227,31 +260,63 @@ app.config(function($stateProvider, $urlRouterProvider) {
 
 	$scope.itemsByPage=15;
 
-    $scope.changeFeatures2 = function(row){
-        alert(row.goodsno);
-    }
-
     $scope.changeFeatures = function (row, ev) {
         $mdDialog.show({
             controller: ToolFeaturesController,
             templateUrl: 'templates/changefeatures.html',
             parent: angular.element(document.body),
+            locals: {
+                row : row,
+                fetchInitialData : $scope.fetchInitialData
+            },
             targetEvent: ev,
             clickOutsideToClose: true,
             fullscreen: $scope.customFullscreen // Only for -xs, -sm breakpoints.
         });
     };
 
-    function ToolFeaturesController($scope) {
-        $scope.hide = function () {
-            $mdDialog.hide();
-        };
-
-        $scope.cancel = function () {
+    function ToolFeaturesController($scope, $http, row, fetchInitialData) {
+        $scope.close = function () {
             $mdDialog.cancel();
         };
+        $scope.change = function () {
+            var tool_features = 0;
+            for(var i in $scope.selected){
+                s = $scope.selected[i];
+                idx = $scope.items.indexOf(s);
+                tool_feature = GLOBALS.TOOL_FEATURES[idx];
+                tool_features |= tool_feature;
+            }
+            if(row.toolFeatures != tool_features){
+                $scope.changeFeaturesInDB(row.goodsno, tool_features);
+                fetchInitialData();
+                $mdDialog.hide();
+            }
+        }
+
+        $scope.changeFeaturesInDB = function (goodsno, tool_features) {
+            $http({
+                method: 'POST',
+                url: GLOBALS.API_HOME + 'change-features/',
+                data: {
+                    tool_features : tool_features,
+                    goodsno : goodsno
+                }
+            }).then(function successCallback(response) {
+                convertData(response);
+            }, function errorCallback(response) {
+
+            });
+        }
         $scope.items = ["품질", "리뷰", "가격", "안전"];
-        $scope.selected = [2];
+        $scope.selected = [];
+
+        $scope.initSelect = function(){
+            for(var i in GLOBALS.TOOL_FEATURES){
+                if((row.toolFeatures & GLOBALS.TOOL_FEATURES[i]) == GLOBALS.TOOL_FEATURES[i])
+                    $scope.selected.push($scope.items[i]);                
+            }
+        }
         $scope.toggle = function (item, list) {
             var idx = list.indexOf(item);
             if (idx > -1) {

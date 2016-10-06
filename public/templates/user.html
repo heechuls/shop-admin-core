@@ -2,6 +2,15 @@
 <html>
 
 <div ng-app="shopAdminCore" ng-controller="userController" ng-init="fetchInitialData()">
+  <div layout="row" style="height:50px;float:left;">
+    <form ng-submit="search(searchKeyword)">
+    <md-input-container>
+      <label>어린이집</label>
+      <input type="kidsSchoolName" ng-model="searchKeyword" style="width:200px"/>
+    </md-input-container>
+    </form>
+    <md-button class="md-raised" style="height:20px;margin-left:20px" ng-click="search(searchKeyword)">검색</md-button>
+  </div>
   <table st-table="rowCollection" class="table table-striped">
     <thead>
       <tr>
@@ -40,4 +49,5 @@
     </tfoot>
   </table>
 </div>
+
 </html>

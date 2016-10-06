@@ -1,4 +1,4 @@
-<md-dialog aria-label="교구">
+<md-dialog aria-label="교구" ng-init="fetchInitialData()">
     <form ng-cloak>
         <md-dialog-content style="padding:10px">
             <md-toolbar>
@@ -8,13 +8,11 @@
                     </h4>
                 </div>
             </md-toolbar>
-            <md-input-container>
-                <label>교구</label>
-                <md-select ng-model="selectedToolCategory" flex-gt-sm="">
-                    <md-option ng-repeat="tool in tools">
-                        {{tool.name}}
+            <md-input-container class="md-block" flex-gt-sm="">
+                <md-select style="color:black" ng-model="selectedToolCategory" placeholder="교구" >
+                    <md-option ng-value="tool" ng-repeat="tool in tools">
+                        {{tool.catnm}}
                     </md-option>
-                    <md-option><em>기타</em></md-option>
                 </md-select>
             </md-input-container>
             <md-input-container class="md-block" flex-gt-sm="">
@@ -27,7 +25,7 @@
             <md-button ng-click="close()" class="md-raised">
                 취소
             </md-button>
-            <md-button ng-click="add()" class="md-raised md-primary">
+            <md-button ng-click="add(selectedToolCategory, toolName)" class="md-raised md-primary">
                 추가
             </md-button>
         </md-dialog-actions>

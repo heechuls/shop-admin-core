@@ -1,11 +1,10 @@
 var express = require('express');
 var router = express.Router();
 var path = require('path');
-var GLOBALS = require('./public/javascripts/globals.js').GLOBALS;
-var db = require();
+var GLOBALS = require('../public/javascripts/globals.js').GLOBALS;
+var db = require('../app.js').db;
 
-
-router.get(GLOBALS.API_HOME + 'category-list/', function (req, res) {
+router.get('/category-lists', function (req, res) {
 	var userno = req.params.userno;
 
 	db.query('SELECT sno, catnm, category FROM gd_category' , function (err, rows, fields) {

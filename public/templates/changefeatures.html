@@ -1,4 +1,4 @@
-<md-dialog aria-label="교구">
+<md-dialog aria-label="교구" ng-init="initSelect()">
     <form ng-cloak>
         <md-dialog-content style="padding:10px">
             <md-toolbar>
@@ -33,8 +33,8 @@
             <md-button ng-click="close()" class="md-raised">
                 취소
             </md-button>
-            <md-button ng-click="change()" class="md-raised md-primary">
-                추가
+            <md-button ng-click="change(row)" class="md-raised md-primary">
+                변경
             </md-button>
         </md-dialog-actions>
 </md-dialog>
