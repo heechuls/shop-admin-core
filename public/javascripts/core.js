@@ -73,9 +73,9 @@ app.config(function($stateProvider, $urlRouterProvider) {
                 m_no: response.data[i].m_no,
                 registeredDate: response.data[i].regdt.substring(0, 10),
                 kidsSchoolName: response.data[i].name,
-                noOfEquippedTools : "2개",
-                noOfNeededTools : "3개",
-                noOfEquippedToolImages : "2장",
+                noOfEquippedTools : response.data[i].own_cnt + "개",
+                noOfNeededTools : response.data[i].need_cnt + "개",
+                noOfEquippedToolImages : response.data[i].own_img_cnt + "장",
                 detail : "보기",
                 nuribox : "보기"
             };
@@ -149,6 +149,40 @@ app.config(function($stateProvider, $urlRouterProvider) {
     };
 
     function ToolsDialogController($scope, $mdDialog, showTools, row) {
+
+        $scope.images = [];
+        function convertImageList(response){
+            var dataSet = [];
+            for (var i in response.data) {
+                var data = {
+                    nuribox_own_no: response.data[i].nuribox_own_no,
+                    nuribox_own_image_url : response.data[i].nuribox_own_image_url,
+                };
+                dataSet.push(data);
+            }
+            console.log(response);
+            $scope.images = dataSet;
+        }
+        fetchOwnNeedToolList = function () {
+
+        };
+        fetchOwnToolList = function () {
+            
+        };
+       fetchOwnToolImageList = function () {
+            $http({
+                method: 'GET',
+                url: GLOBALS.API_HOME + 'own-tool-image-list/' + row.m_no
+            }).then(function successCallback(response) {
+                convertImageList(response);
+            }, function errorCallback(response) {
+            });	
+        };
+        $scope.fetchInitialData = function () {
+            fetchOwnNeedToolList();
+            fetchOwnToolImageList();
+            fetchOwnToolList();
+        }
         $scope.hide = function () {
             $mdDialog.hide();
         };
@@ -225,7 +259,7 @@ app.config(function($stateProvider, $urlRouterProvider) {
 
         $scope.close = function(){
             $mdDialog.hide();
-            showTools(null);
+            showTools(row);
         };
 
         $scope.add = function(tool, toolName){
@@ -235,7 +269,7 @@ app.config(function($stateProvider, $urlRouterProvider) {
             }
             $mdDialog.hide();
             $scope.insertTool(tool, toolName, function(){
-                showTools(null);
+                showTools(row);
             });
         };
     }

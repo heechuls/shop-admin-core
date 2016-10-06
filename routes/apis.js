@@ -97,7 +97,22 @@ router.get('/userinfo/:userno', function (req, res) {
 
 //어린이집 전체 목록
 router.get('/user-list-all', function (req, res) {
-	db.query('SELECT m_no, name, regdt FROM gd_member WHERE 1 ORDER BY m_no', function (err, rows, fields) {
+	db.query('SELECT m_no, name, regdt, (SELECT COUNT(*) FROM gd_n_nuribox_own_tools WHERE gd_n_nuribox_own_tools.m_no = gd_member.m_no AND gd_n_nuribox_own_tools.nuribox_own_type = 0) AS own_cnt, (SELECT COUNT(*) FROM gd_n_nuribox_own_tools WHERE gd_n_nuribox_own_tools.m_no = gd_member.m_no AND gd_n_nuribox_own_tools.nuribox_own_type = 1) AS own_img_cnt, (SELECT COUNT(*) FROM gd_n_nuribox_need_tools WHERE gd_n_nuribox_need_tools.m_no = gd_member.m_no) AS need_cnt FROM gd_member ORDER BY m_no', function (err, rows, fields) {
+		if (err) {
+			console.log(new Date());
+			console.log(err);
+			res.send(err);
+		} else {
+            res.send(rows);
+		}
+	});
+});
+//SELECT A.m_no, A.name, A.regdt, B.own FROM gd_member A, (SELECT count(C.nuribox_own_no) own FROM gd_n_nuribox_own_tools C WHERE m_no = m_no) B ORDER BY A.m_no;
+//보유 교구 목록
+router.get('/own-tool-list/:userno', function (req, res) {
+	var userno = req.params.userno;
+
+	db.query('SELECT nuribox_own_no, catnm, nuribox_own_nm FROM `gd_n_nuribox_own_tools` A LEFT JOIN gd_category B ON A.nuribox_own_category_no = B.sno Where nuribox_own_type = 0 and m_no = ' + userno, function (err, rows, fields) {
 		if (err) {
 			console.log(new Date());
 			console.log(err);
@@ -108,8 +123,24 @@ router.get('/user-list-all', function (req, res) {
 	});
 });
 
+//보유 교구 목록
+router.get('/own-tool-image-list/:userno', function (req, res) {
+	var userno = req.params.userno;
+
+	db.query('SELECT nuribox_own_no, nuribox_own_image_url FROM `gd_n_nuribox_own_tools` A LEFT JOIN gd_category B ON A.nuribox_own_category_no = B.sno Where nuribox_own_type = 1 and m_no = ' + userno, function (err, rows, fields) {
+		if (err) {
+			console.log(new Date());
+			console.log(err);
+			res.send(err);
+		} else {
+            res.send(rows);
+		}
+	});
+});
+
+
 //보유 교구 등록
-router.post('/insert-tool', function (req, res) {
+router.post('/insert-own-tool', function (req, res) {
 	var data = {
 		m_no : req.body.m_no,
 		nuribox_own_category_no : req.body.sno,
@@ -123,7 +154,7 @@ router.post('/insert-tool', function (req, res) {
 			console.log(err);
 			res.send(err);
 		} else {
-            res.send(rows);
+            res.send(result);
 		}
 	});
 });
