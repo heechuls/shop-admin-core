@@ -10,7 +10,7 @@ var GLOBALS = {
 
     TOOL_FEATURES : new Array(1, 2, 4, 8),
 
-    API_HOME : '/api/',
+    API_HOME : '/apis/',
 
     getListToolFeatures : function(feature_flag){
         var retVal = "";

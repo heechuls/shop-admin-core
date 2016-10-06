@@ -14,13 +14,6 @@ app.set('view engine', 'jade');
 
 var mysql = require('mysql');
 
-var db_local = {
-	host : 'localhost',
-	user : 'root',
-	password: '95WhGksGmf!6',
-	database: 'talktudy'
-};
-
 var db_godomall = {
 	host : '52.78.130.219',
 	user : 'root',
@@ -29,11 +22,9 @@ var db_godomall = {
 }
 
 var db_connection = db_godomall;
-
 var db = mysql.createConnection( db_connection );
 
 module.exports = app;
-module.exports.user_list_all = user_list_all;
 module.exports.__dirname = __dirname;
 module.exports.db = db;
 
@@ -46,12 +37,10 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 var routes = require('./routes/index');
-var users = require('./routes/users');
 var api = require('./routes/apis');
 
 app.use('/templates', express.static('/public/templates'));
 app.use('/', routes);
-app.use('/users', users);
 app.use('/apis', api);
 
 var handleDisconnect = function() {
@@ -70,131 +59,6 @@ var handleDisconnect = function() {
 }
 
 handleDisconnect();
-
-
-/*
-// 서버 시작
-app.listen(process.env.PORT || 3000, function () {
-	console.log('talktudy app running on port 3000');
-});
-*/
-
-var user_list_all = function(req, res) {
-	db.query('SELECT m_no, name, regdt FROM gd_member WHERE 1 ORDER BY m_no', function (err, rows, fields) {
-		if (err) {
-			console.log(new Date());
-			console.log(err);
-			res.send(err);
-		} else {
-            console.log(rows);
-			//res.render('category_list', { title : title, data : rows });
-		}
-	});
-};
-
-//APIs through HTTP Post
-app.get(GLOBALS.API_HOME + 'userinfo/:userno', function (req, res) {
-	var userno = req.params.userno;
-
-	db.query('SELECT * FROM gd_member WHERE m_no = ' + userno, function (err, rows, fields) {
-		if (err) {
-			console.log(new Date());
-			console.log(err);
-			res.send(err);
-		} else {
-			res.send( rows[0] );
-		}
-	});
-});
-
-app.get(GLOBALS.API_HOME + 'user-list-all/', function (req, res) {
-	db.query('SELECT m_no, name, regdt FROM gd_member WHERE 1 ORDER BY m_no', function (err, rows, fields) {
-		if (err) {
-			console.log(new Date());
-			console.log(err);
-			res.send(err);
-		} else {
-            res.send(rows);
-		}
-	});
-});
-
-app.get(GLOBALS.API_HOME + 'user-list/:search', function (req, res) {
-	var search = req.params.search;
-
-	db.query('SELECT m_no, name, regdt FROM gd_member WHERE name LIKE "' + search + '" ORDER BY m_no', function (err, rows, fields) {
-		if (err) {
-			console.log(new Date());
-			console.log(err);
-			res.send(err);
-		} else {
-            res.send(rows);
-		}
-	});
-});
-
-//추천인 있는 사용자 목록
-app.get(GLOBALS.API_HOME + 'recomm-list/', function (req, res) {
-	var userno = req.params.userno;
-
-	db.query('SELECT A.m_no, A.name aname, A.recommid, A.regdt, B.name bname, B.m_id FROM gd_member A JOIN gd_member B ON B.m_id = A.recommid', function (err, rows, fields) {
-		if (err) {
-			console.log(new Date());
-			console.log(err);
-			res.send(err);
-		} else {
-			res.send(rows);
-		}
-	});
-});
-
-//카테고리 목록
-app.get(GLOBALS.API_HOME + 'category-list/', function (req, res) {
-	var userno = req.params.userno;
-
-	db.query('SELECT sno, catnm, category FROM gd_category' , function (err, rows, fields) {
-		if (err) {
-			console.log(new Date());
-			console.log(err);
-			res.send(err);
-		} else {
-			res.send(rows);
-		}
-	});
-});
-
-//교구 목록
-app.get(GLOBALS.API_HOME + 'tool-list/', function (req, res) {
-	var userno = req.params.userno;
-
-	db.query('Select goodsno, goodsnm, tool_features, catnm FROM (SELECT A.goodsno, A.goodsnm, A.tool_features, B.category FROM gd_goods A LEFT JOIN gd_goods_link B ON A.goodsno = B.goodsno GROUP BY A.goodsno) C, gd_category D WHERE C.category = D.category' , function (err, rows, fields) {
-		if (err) {
-			console.log(new Date());
-			console.log(err);
-			res.send(err);
-		} else {
-			res.send(rows);
-		}
-	});
-});
-
-// 교구 특성 업데이트
-app.post(GLOBALS.API_HOME + 'change-features/', function (req, res) {
-
-	var data = {
-		tool_features : req.body.tool_features,
-		goodsno : req.body.goodsno
-	};
-	db.query('UPDATE gd_goods SET tool_features = ' + data.tool_features + ' WHERE goodsno = ' + data.goodsno, function (err, result) {
-		if (err) {
-			console.log(new Date());
-			console.log(err);
-			res.send(err);
-		} else {
-			res.send(result);
-		}
-	});
-});
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -221,18 +85,7 @@ var auth = function (req, res, next) {
 		return unauthorized(res);
 	}
 }
-
-app.auth = auth;
-
-/* GET home page. */
-
-/*app.get('/', function(req, res, next) {
-  //res.render('index', { title: 'Express' });
-  console.log("app.js")
-  user_list_all(req, res);
-  res.sendFile("index.htm");
-});
-*/
+module.exports.auth = auth;
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

@@ -70,6 +70,7 @@ app.config(function($stateProvider, $urlRouterProvider) {
         var dataSet = [];
         for (var i in response.data) {
             var data = {
+                m_no: response.data[i].m_no,
                 registeredDate: response.data[i].regdt.substring(0, 10),
                 kidsSchoolName: response.data[i].name,
                 noOfEquippedTools : "2개",
@@ -128,7 +129,8 @@ app.config(function($stateProvider, $urlRouterProvider) {
             templateUrl: 'templates/tools.html',
             parent: angular.element(document.body),
             locals: {
-                showTools: $scope.showTools
+                showTools: $scope.showTools,
+                row : row
             },
             targetEvent: ev,
             clickOutsideToClose: true,
@@ -146,7 +148,7 @@ app.config(function($stateProvider, $urlRouterProvider) {
         });
     };
 
-    function ToolsDialogController($scope, $mdDialog, showTools) {
+    function ToolsDialogController($scope, $mdDialog, showTools, row) {
         $scope.hide = function () {
             $mdDialog.hide();
         };
@@ -165,7 +167,8 @@ app.config(function($stateProvider, $urlRouterProvider) {
                 templateUrl: 'templates/addtool.html',
                 parent: ToolsDialogController,
                 locals: {
-                    showTools : showTools
+                    showTools : showTools,
+                    row : row
                 },
                 targetEvent: ev,
                 clickOutsideToClose: true,
@@ -173,7 +176,7 @@ app.config(function($stateProvider, $urlRouterProvider) {
             });
         };
     }
-    function AddToolController($scope, $mdDialog, showTools) {
+    function AddToolController($scope, $mdDialog, showTools, row) {
         $scope.tools = [];
         $scope.selectedToolCategory = null;
         $scope.toolName = '';
@@ -187,6 +190,26 @@ app.config(function($stateProvider, $urlRouterProvider) {
             }, function errorCallback(response) {
             });	
         };
+        
+        $scope.insertTool = function (tool, toolName, done) {
+            $http({
+                method: 'POST',
+                url: GLOBALS.API_HOME + 'insert-tool/',
+                data: {
+                    sno : tool.sno,
+                    toolName : toolName,
+                    m_no : row.m_no
+                }
+            }).then(function successCallback(response) {
+                if(done != null)
+                    return done();
+
+            }, function errorCallback(response) {
+                alert("DB 접속에 문제가 생겼습니다.");
+                if(done != null)
+                    return done();
+            });
+        }
 
         function convertData(response) {
             var dataSet = [];
@@ -206,8 +229,14 @@ app.config(function($stateProvider, $urlRouterProvider) {
         };
 
         $scope.add = function(tool, toolName){
+            if(tool == undefined || toolName.length ==0){
+                alert("보유 교구 카테고리와 이름을 정확히 입력해주세요");
+                return;
+            }
             $mdDialog.hide();
-            showTools(null);
+            $scope.insertTool(tool, toolName, function(){
+                showTools(null);
+            });
         };
     }
     function NuriboxDialogController($scope, $mdDialog) {
