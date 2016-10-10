@@ -148,7 +148,7 @@ router.post('/insert-own-tool', function (req, res) {
 		nuribox_own_type : 0, //Text
 	};
 
-	db.query('INSERT INTO gd_n_nuribox_own_tools SET ?', data, function (err, rows, fields) {
+	db.query('INSERT INTO gd_n_nuribox_own_tools SET ?', data, function (err, result) {
 		if (err) {
 			console.log(new Date());
 			console.log(err);
