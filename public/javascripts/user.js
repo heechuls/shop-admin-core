@@ -32,7 +32,7 @@ controller('userController', function($scope, $mdDialog, $http) {
             var data = {
                 m_no: response.data[i].m_no,
                 registeredDate: response.data[i].regdt.substring(0, 10),
-                kidsSchoolName: response.data[i].name,
+                kidsSchoolName: response.data[i].nickname,
                 noOfEquippedTools : "2개",
                 noOfNeededTools : "3개",
                 noOfEquippedToolImages : "2장",
@@ -41,6 +41,7 @@ controller('userController', function($scope, $mdDialog, $http) {
             };
             dataSet.push(data);
             console.log(data);
+            $window.alert(JSON.stringify(response.data[i]));
         }
         $scope.rowCollection = dataSet;
         //$scope.test = "done";
@@ -75,9 +76,6 @@ controller('userController', function($scope, $mdDialog, $http) {
 
 	$scope.itemsByPage=15;
 
-    /*for (var j = 0; j < 30; j++) {
-        $scope.rowCollection.push(createRandomItem());
-    }*/
     
     $scope.detail = function(row){
         alert(row.toString());
