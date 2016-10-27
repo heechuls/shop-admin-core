@@ -1,17 +1,17 @@
-angular.module('shopAdminCore').
-controller('productController', function($scope, $mdDialog, $http) {
+var app = angular.module('shopAdminCore');
+app.controller('productController', function ($scope, $mdDialog, $http) {
 
     $scope.rowCollection = [];
- 
-    function convertData(response){
+
+    function convertData(response) {
         var dataSet = [];
         for (var i in response.data) {
             var data = {
-                category : response.data[i].catnm,
+                category: response.data[i].catnm,
                 goodsno: response.data[i].goodsno,
                 goodsnm: response.data[i].goodsnm,
                 toolFeatures: response.data[i].tool_features,
-                toolFeaturesTxt : GLOBALS.getListToolFeatures(response.data[i].tool_features),
+                toolFeaturesTxt: GLOBALS.getListToolFeatures(response.data[i].tool_features),
             };
             dataSet.push(data);
             //console.log(data);
@@ -27,10 +27,10 @@ controller('productController', function($scope, $mdDialog, $http) {
         }).then(function successCallback(response) {
             convertData(response);
         }, function errorCallback(response) {
-        });	
+        });
     }
 
-	$scope.itemsByPage=15;
+    $scope.itemsByPage = 15;
 
     $scope.changeFeatures = function (row, ev) {
         $mdDialog.show({
@@ -38,8 +38,8 @@ controller('productController', function($scope, $mdDialog, $http) {
             templateUrl: 'templates/changefeatures.html',
             parent: angular.element(document.body),
             locals: {
-                row : row,
-                fetchInitialData : $scope.fetchInitialData
+                row: row,
+                fetchInitialData: $scope.fetchInitialData
             },
             targetEvent: ev,
             clickOutsideToClose: true,
@@ -53,13 +53,13 @@ controller('productController', function($scope, $mdDialog, $http) {
         };
         $scope.change = function () {
             var tool_features = 0;
-            for(var i in $scope.selected){
+            for (var i in $scope.selected) {
                 s = $scope.selected[i];
                 idx = $scope.items.indexOf(s);
                 tool_feature = GLOBALS.TOOL_FEATURES[idx];
                 tool_features |= tool_feature;
             }
-            if(row.toolFeatures != tool_features){
+            if (row.toolFeatures != tool_features) {
                 $scope.changeFeaturesInDB(row.goodsno, tool_features);
                 fetchInitialData();
                 $mdDialog.hide();
@@ -71,8 +71,8 @@ controller('productController', function($scope, $mdDialog, $http) {
                 method: 'POST',
                 url: GLOBALS.API_HOME + 'change-features/',
                 data: {
-                    tool_features : tool_features,
-                    goodsno : goodsno
+                    tool_features: tool_features,
+                    goodsno: goodsno
                 }
             }).then(function successCallback(response) {
                 convertData(response);
@@ -83,10 +83,11 @@ controller('productController', function($scope, $mdDialog, $http) {
         $scope.items = ["품질", "리뷰", "가격", "안전"];
         $scope.selected = [];
 
-        $scope.initSelect = function(){
-            for(var i in GLOBALS.TOOL_FEATURES){
-                if((row.toolFeatures & GLOBALS.TOOL_FEATURES[i]) == GLOBALS.TOOL_FEATURES[i])
-                    $scope.selected.push($scope.items[i]);                
+
+        $scope.initSelect = function () {
+            for (var i in GLOBALS.TOOL_FEATURES) {
+                if ((row.toolFeatures & GLOBALS.TOOL_FEATURES[i]) == GLOBALS.TOOL_FEATURES[i])
+                    $scope.selected.push($scope.items[i]);
             }
         }
         $scope.toggle = function (item, list) {

@@ -1,4 +1,4 @@
-<md-dialog aria-label="교구">
+<md-dialog aria-label="교구" ng-init="fetchInitialData()">
     <form ng-cloak>
         <md-dialog-content style="padding:10px">
             <md-button ng-click="createNuribox()" class="md-raised" style="float: left;">누리박스 생성</md-button>
@@ -59,6 +59,7 @@
                 }
             </style>
             <table class="tg">
+                <thead>
                 <tr>
                     <th class="tg-e9v9">카테고리</th>
                     <th class="tg-e9v8">Status</th>
@@ -68,42 +69,18 @@
                     <th class="tg-e9v8">누리박스</th>
                     <th class="tg-e9v8">비고</th>
                 </tr>
-                <tr>
-                    <td class="tg-e9v9">성교육인형</td>
-                    <td class="tg-e9v8"></td>
-                    <td class="tg-e9v8"></td>
-                    <td class="tg-e9v8"></td>
-                </tr>
-                <tr>
-                    <td class="tg-e9v9">미용놀이</td>
-                    <td class="tg-e9v8"></td>
-                    <td class="tg-e9v8"></td>
-                    <td class="tg-e9v8"></td>
-                </tr>
-                <tr>
-                    <td class="tg-e9v9">음악</td>
-                    <td class="tg-e9v8"></td>
-                    <td class="tg-e9v8"></td>
-                    <td class="tg-e9v8"></td>
-                </tr>
-                <tr>
-                    <td class="tg-e9v9">미술교구</td>
-                    <td class="tg-e9v8"></td>
-                    <td class="tg-e9v8"></td>
-                    <td class="tg-e9v8"></td>
-                </tr>
-                <tr>
-                    <td class="tg-e9v9">과학교구</td>
-                    <td class="tg-e9v8"></td>
-                    <td class="tg-e9v8"></td>
-                    <td class="tg-e9v8"></td>
-                </tr>
-                <tr>
-                    <td class="tg-e9v9">블럭류</td>
-                    <td class="tg-e9v8"></td>
-                    <td class="tg-e9v8"></td>
-                    <td class="tg-e9v8"></td>
-                </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="nuribox_item in Nuribox" style="text-align:center">
+                        <td>{{nuribox_item.category}}</td>
+                        <td>{{nuribox_item.status}}</td>
+                        <td>{{nuribox_item.first_filtering}}</td>
+                        <td>{{nuribox_item.second_filtering}}</td>
+                        <td>{{nuribox_item.third_filtering}}</td>
+                        <td>{{nuribox_item.selected_product_no}}</td>
+                        <td>{{nuribox_item.remark}}</td>
+                    </tr>
+                </tbody>
             </table>
         <md-dialog-actions layout="row">
             <md-button ng-click="answer('useful')">

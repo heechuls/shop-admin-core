@@ -176,17 +176,17 @@ app.config(function ($stateProvider, $urlRouterProvider) {
                         //ctList 받아오기 ~
                         $http.get(GLOBALS.API_HOME + 'category-list')
                             .success(function (data, status, headers, config) {
-                                for(var myData in data){
+                                for (var myData in data) {
                                     window.alert("ddddd");
-                                    myData.items =fetchOwnList(myData.sno);
+                                    myData.items = fetchOwnList(myData.sno);
                                     $scope.ctList.push(myData);
                                 }
-                        });
+                            });
                     });
             };
-        
 
-            function fetchOwnList (ctId) {
+
+            function fetchOwnList(ctId) {
                 for (var item in $scope.items) {
                     if (item.nuribox_own_category_no == ctId) {
                         result += item.nuribox_own_nm + " ";

@@ -186,4 +186,33 @@ router.post('/insert-own-tool', function (req, res) {
 	});
 });
 
+router.get('/own-tool-list/:userno', function (req, res) {
+	var userno = req.params.userno;
+
+	db.query('SELECT nuribox_own_no, catnm, nuribox_own_nm FROM `gd_n_nuribox_own_tools` A LEFT JOIN gd_category B ON A.nuribox_own_category_no = B.sno Where nuribox_own_type = 0 and m_no = ' + userno, function (err, rows, fields) {
+		if (err) {
+			console.log(new Date());
+			console.log(err);
+			res.send(err);
+		} else {
+			res.send(rows);
+		}
+	});
+});
+
+//보유/필요 여부와 카테고리 목록
+router.get('/nuribox-list/:userno', function (req, res) {
+	var userno = req.params.userno;
+	db.query('SELECT sno, catnm, category, (SELECT COUNT( * ) FROM gd_n_nuribox_own_tools WHERE gd_n_nuribox_own_tools.m_no = ' + userno + ' AND gd_category.category = gd_n_nuribox_own_tools.nuribox_own_category_no) AS own_cnt, (SELECT COUNT( * ) FROM gd_n_nuribox_need_tools WHERE gd_n_nuribox_need_tools.m_no = ' + userno + ' AND gd_category.category = gd_n_nuribox_need_tools.nuribox_need_category_no) AS need_cnt FROM gd_category', function (err, rows, fields) {
+		if (err) {
+			console.log(new Date());
+			console.log(err);
+			res.send(err);
+		} else {
+			res.send(rows);
+		}
+	});
+});
+
+
 module.exports = router;
