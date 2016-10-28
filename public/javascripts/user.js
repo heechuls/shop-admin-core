@@ -276,9 +276,9 @@ app.controller('userController', function ($scope, $mdDialog, $http) {
     category : "",
     status : false,
     first_filtering : false,
-    second_filtering : GLOBALS.NURIBOX_NOT_APPLICABLE,
-    third_filtering : GLOBALS.NURIBOX_NOT_APPLICABLE,
-    selected_product_no : GLOBALS.NURIBOX_NOT_APPLICABLE,
+    second_filtering : NuriboxList.NURIBOX_NOT_APPLICABLE,
+    third_filtering : NuriboxList.NURIBOX_NOT_APPLICABLE,
+    selected_product_no : NuriboxList.NURIBOX_NOT_APPLICABLE,
     };*/
 
     function NuriboxDialogController($scope, $mdDialog, showNuribox, row) {
@@ -287,22 +287,41 @@ app.controller('userController', function ($scope, $mdDialog, $http) {
 
         $scope.fetchInitialData = function(){
             $scope.tools = NuriboxList.fetchNuriboxList($http, row.m_no, function(list){
-                var nuribox_list = [];
+                var nuribox_list = [], j = 0, selected_status = NuriboxList.STATUS_NONE;
+
                 for (var i in list) {
-                    var status = "";
-                    if(list[i].own_or_need == GLOBALS.NURIBOX_NEED)
+                    var status = "", first_filtering = "", second_filtering = {}, third_filtering, remark, selected_nuribox_item = "";
+
+                    if(list[i].own_or_need == NuriboxList.NURIBOX_NEED){
                         status = "필요";
-                    else if(list[i].own_or_need == GLOBALS.NURIBOX_OWN)
+                        if(j < NuriboxList.MAX_NURIBOX_RECOMMENDED_ITEM){
+                            second_filtering = NuriboxList.pickClosestrNuriboxItem(NuriboxTestSet[j++]);
+                            selected_nuribox_item = second_filtering.goodsnm;
+                            selected_status = NuriboxList.STATUS_FIRST_NEED;
+                        }
+                        else selected_status = NuriboxList.STATUS_NEXT_SELECTED;
+                    }
+                    else if(list[i].own_or_need == NuriboxList.NURIBOX_OWN){
                         status = "보유";
-                
+                        first_filtering = "제거";
+                        selected_status = NuriboxList.STATUS_FIRST_OWN;
+                    }
+                    else{
+                        if(j < NuriboxList.MAX_NURIBOX_RECOMMENDED_ITEM){
+                            second_filtering = NuriboxList.pickClosestrNuriboxItem(NuriboxTestSet[j++]);
+                            selected_nuribox_item = second_filtering.goodsnm;
+                            selected_status = NuriboxList.STATUS_SECOND_SELECTED;
+                        }
+                        else selected_status = NuriboxList.STATUS_NEXT_SELECTED;
+                    }
                     var nuribox_item = {
                         category: list[i].catnm,
                         status: status, //Retrive whether it is owned
-                        first_filtering: "", //
-                        second_filtering: "", //GLOBALS.NURIBOX_NOT_APPLICABLE,
-                        third_filtering: "", //GLOBALS.NURIBOX_NOT_APPLICABLE,
-                        selected_product_no: "", //GLOBALS.NURIBOX_NOT_APPLICABLE,
-                        remark: ""
+                        first_filtering: first_filtering,
+                        second_filtering: second_filtering,
+                        third_filtering: "", 
+                        selected_nuribox_item: selected_nuribox_item, 
+                        remark: NuriboxList.getStatusText(selected_status, 0)
                     }
                     nuribox_list.push(nuribox_item);
                 }
@@ -324,15 +343,6 @@ app.controller('userController', function ($scope, $mdDialog, $http) {
         }
     }
 });
-
-var Nuribox = {
-    category : "",
-    status : false,
-    first_filtering : false,
-    second_filtering : GLOBALS.NURIBOX_NOT_APPLICABLE,
-    third_filtering : GLOBALS.NURIBOX_NOT_APPLICABLE,
-    selected_product_no : GLOBALS.NURIBOX_NOT_APPLICABLE,
-}
 
 var ProductCategory = {
     convertCategoryList: function (response) {
@@ -362,11 +372,11 @@ var NuriboxList = {
     convertNuriboxList: function (response) {
         var dataSet = [];
         for (var i in response.data) {
-            var own_or_need = GLOBALS.NURIBOX_NOT_OWN_AND_NEED;
+            var own_or_need = NuriboxList.NURIBOX_NOT_OWN_AND_NEED;
             if(response.data[i].need_cnt > 0)
-                own_or_need = GLOBALS.NURIBOX_NEED;
+                own_or_need = NuriboxList.NURIBOX_NEED;
             else if(response.data[i].own_cnt > 0)
-                own_or_need = GLOBALS.NURIBOX_OWN;
+                own_or_need = NuriboxList.NURIBOX_OWN;
 
             var data = {
                 catnm: response.data[i].catnm,
@@ -387,6 +397,85 @@ var NuriboxList = {
         }, function errorCallback(response) {
         });
     }
+    ,
+
+
+    pickClosestrNuriboxItem : function(NuriboxVectorSet){
+        var result = []; result[0] = -1;
+        var highestValueIndex = 0;
+
+        for(var i=1; i < NuriboxVectorSet.length; i++){
+            var comparingValueSum = 0;
+            if(NuriboxVectorSet[i] != undefined) {
+                for(var j=0; j < 4; j++){
+                comparingValueSum += NuriboxVectorSet[0][j] & NuriboxVectorSet[i][j];
+                }
+            }
+            else comparingValueSum = -1; //For third_filtering to except the second filtered item
+
+            highestValueIndex = result[highestValueIndex] >= comparingValueSum ? highestValueIndex: i;
+            result.push(comparingValueSum);
+        }
+        return {
+            goodsno : NuriboxVectorSet[highestValueIndex][4],
+            goodsnm : NuriboxVectorSet[highestValueIndex][5],
+            tool_features : NuriboxVectorSet[highestValueIndex][6],
+            highestValueIndex : highestValueIndex
+        }
+    },
+
+    NURIBOX_NOT_OWN_AND_NEED : 0,
+    NURIBOX_OWN : 1,
+    NURIBOX_NEED : 2,
+
+    MAX_NURIBOX_RECOMMENDED_ITEM : 4,
+
+    STATUS_NONE : 0,
+    STATUS_FIRST_OWN : 1,
+    STATUS_FIRST_NEED : 2,
+    STATUS_SECOND_SELECTED : 3,
+    STATUS_THIRD_SELECTED : 4,
+    STATUS_NEXT_SELECTED : 5,
+
+    getStatusText : function(status, third_reason) {
+        switch(status){
+            case this.STATUS_NONE : return "";
+            case this.STATUS_FIRST_OWN : return "";
+            case this.STATUS_FIRST_NEED : return "필요교구 우선";
+            case this.STATUS_SECOND_SELECTED : return "2차필터링 - 알고리즘 적용";
+            case this.STATUS_THIRD_SELECTED : return "3차필터링 - " + GLOBALS.getListToolFeatures(third_reason);
+            case this.STATUS_NEXT_SELECTED : return "다음 누리박스에 적용";            
+        }
+    }
+
+
+}
+
+var NuriboxTestSet = {
+    0 : [
+        [1, 1, 1, 0, 1, "전사 헤드기어", 1], //[4] goodsno, [5] goodsnm, [6] tool_features
+        [0, 0, 1, 0, 2, "야구 헤드기어", 2],
+        [1, 1, 1, 1, 3, "병원놀이", 1],
+        [1, 0, 0, 1, 4, "리얼성교육 인형", 8],        
+    ],
+    1 : [
+        [1, 1, 1, 0, 1, "전사 헤드기어", 1],
+        [0, 1, 0, 0, 5, "실전성교육 인형", 11],
+        [0, 0, 0, 1, 14, "미용놀이교구", 14],
+        [0, 0, 1, 1, 16, "밴드결성", 4],        
+    ],
+    2 : [
+        [1, 1, 1, 0, 1, "전사 헤드기어", 1],
+        [1, 1, 1, 0, 18, "내 꿈은 락커", 4],
+        [1, 0, 0, 1, 20, "강남언니", 1],
+        [0, 0, 0, 0, 22, "강남언니 1일완성교구", 1],        
+    ],
+    3 : [
+        [1, 1, 1, 0, 24, "전사 헤드기어", 1],
+        [0, 1, 1, 0, 26, "과학자는 내인생", 1],
+        [1, 1, 0, 1, 28, "손으로 친구 올리기", 1],
+        [1, 1, 1, 1, 30, "손으로 엄마 놀래키기", 4],        
+    ],
 }
 
 

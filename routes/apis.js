@@ -203,7 +203,7 @@ router.get('/own-tool-list/:userno', function (req, res) {
 //보유/필요 여부와 카테고리 목록
 router.get('/nuribox-list/:userno', function (req, res) {
 	var userno = req.params.userno;
-	db.query('SELECT sno, catnm, category, (SELECT COUNT( * ) FROM gd_n_nuribox_own_tools WHERE gd_n_nuribox_own_tools.m_no = ' + userno + ' AND gd_category.category = gd_n_nuribox_own_tools.nuribox_own_category_no) AS own_cnt, (SELECT COUNT( * ) FROM gd_n_nuribox_need_tools WHERE gd_n_nuribox_need_tools.m_no = ' + userno + ' AND gd_category.category = gd_n_nuribox_need_tools.nuribox_need_category_no) AS need_cnt FROM gd_category', function (err, rows, fields) {
+	db.query('SELECT sno, catnm, category, (SELECT COUNT( * ) FROM gd_n_nuribox_own_tools WHERE gd_n_nuribox_own_tools.m_no = ' + userno + ' AND gd_category.category = gd_n_nuribox_own_tools.nuribox_own_category_no) AS own_cnt, (SELECT COUNT( * ) FROM gd_n_nuribox_need_tools WHERE gd_n_nuribox_need_tools.m_no = ' + userno + ' AND gd_category.category = gd_n_nuribox_need_tools.nuribox_need_category_no) AS need_cnt FROM gd_category order by need_cnt desc', function (err, rows, fields) {
 		if (err) {
 			console.log(new Date());
 			console.log(err);

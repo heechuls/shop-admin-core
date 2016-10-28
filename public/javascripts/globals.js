@@ -20,11 +20,7 @@ var GLOBALS = {
         retVal += (feature_flag & this.TOOL_FEATURE_SAFETY) == this.TOOL_FEATURE_SAFETY ? "안전" : "";
         
         return retVal;
-    },
-
-    NURIBOX_NOT_OWN_AND_NEED : 0,
-    NURIBOX_OWN : 1,
-    NURIBOX_NEED : 2,
+    }
 
 
 };
