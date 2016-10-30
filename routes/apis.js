@@ -69,7 +69,7 @@ router.get('/tool-list', function (req, res) {
 router.get('/user-list/:search', function (req, res) {
 	var search = req.params.search;
 
-	db.query('SELECT m_no, name, regdt FROM gd_member WHERE name LIKE "' + search + '" ORDER BY m_no', function (err, rows, fields) {
+	db.query('SELECT m_no, nickname, regdt, (SELECT COUNT(*) FROM gd_n_nuribox_own_tools WHERE gd_n_nuribox_own_tools.m_no = gd_member.m_no AND gd_n_nuribox_own_tools.nuribox_own_type = 0) AS own_cnt, (SELECT COUNT(*) FROM gd_n_nuribox_own_tools WHERE gd_n_nuribox_own_tools.m_no = gd_member.m_no AND gd_n_nuribox_own_tools.nuribox_own_type = 1) AS own_img_cnt, (SELECT COUNT(*) FROM gd_n_nuribox_need_tools WHERE gd_n_nuribox_need_tools.m_no = gd_member.m_no) AS need_cnt from gd_member WHERE nickname LIKE "%' + search + '%" ORDER BY m_no', function (err, rows, fields) {
 		if (err) {
 			console.log(new Date());
 			console.log(err);

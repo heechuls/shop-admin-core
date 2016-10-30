@@ -58,13 +58,14 @@ app.controller('userController', function ($scope, $mdDialog, $http) {
     }
 
     $scope.search = function (searchKeyword) {
-        if (searchKeyword == null || searchKeyword.length == 0) {
-            alert("어린이집 이름을 입력해주세요.");
-            return;
-        }
+        if (searchKeyword == null || searchKeyword.length == 0)
+            api = 'user-list-all/';
+        else api = 'user-list/';
+
+
         $http({
             method: 'GET',
-            url: GLOBALS.API_HOME + 'user-list/' + searchKeyword
+            url: GLOBALS.API_HOME + api + searchKeyword
         }).then(function successCallback(response) {
             convertData(response);
         }, function errorCallback(response) {
@@ -534,6 +535,7 @@ var NuriboxList = {
     }
 }
 
+//This Test Set has to be real data filled in
 var NuriboxTestSetOrg = [
     [
         [1, 1, 1, 0, 1, "전사 헤드기어", 1], //[4] goodsno, [5] goodsnm, [6] tool_features
