@@ -21,8 +21,6 @@ var GLOBALS = {
         
         return retVal;
     }
-
-
 };
 
 /*

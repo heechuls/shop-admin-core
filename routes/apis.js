@@ -214,5 +214,21 @@ router.get('/nuribox-list/:userno', function (req, res) {
 	});
 });
 
+//동일 반품 사유가 있는지 검색
+router.post('/return_list_with_reason', function (req, res) {
+	var data = {
+		m_no: req.body.m_no,
+		return_type: req.body.return_type,
+	};
+	db.query('SELECT count(*) count FROM gd_n_nuribox_item A, gd_n_nuribox B where A.nuribox_no = B.nuribox_no and B.m_no = ' + data.m_no + ' and A.return_type = ' + data.return_type, function (err, rows, fields) {
+		if (err) {
+			console.log(new Date());
+			console.log(err);
+			res.send(err);
+		} else {
+			res.send(rows);
+		}
+	});
+});
 
 module.exports = router;
