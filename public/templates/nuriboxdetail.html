@@ -1,0 +1,125 @@
+<md-dialog aria-label="교구" ng-init="fetchInitialData()">
+    <form ng-cloak>
+        <md-dialog-content style="padding:10px">
+            <style type="text/css">
+                .tg {
+                    border-collapse: collapse;
+                    border-spacing: 0;
+                    border-color: #999;
+                }
+                
+                .tg td {
+                    font-family: Arial, sans-serif;
+                    font-size: 14px;
+                    padding: 10px 5px;
+                    border-style: solid;
+                    border-width: 1px;
+                    overflow: hidden;
+                    word-break: normal;
+                    border-color: #999;
+                    color: #444;
+                    background-color: #F7FDFA;
+                }
+                
+                .tg th {
+                    font-family: Arial, sans-serif;
+                    font-size: 14px;
+                    font-weight: normal;
+                    padding: 10px 5px;
+                    border-style: solid;
+                    border-width: 1px;
+                    overflow: hidden;
+                    word-break: normal;
+                    border-color: #999;
+                    color: #fff;
+                    background-color: #26ADE4;
+                    text-align: center
+                }
+                
+                .tg .tg-yw4l {
+                    font-size: 15px;
+                    text-align: center;
+                    vertical-align: top;
+                }
+                
+                .tg .tg-e9v9 {
+                    font-size: 15px;
+                    text-align: center;
+                    vertical-align: top;
+                    background-color: #20ADE4;
+                }
+                
+                .tg .tg-e9v10 {
+                    font-size: 15px;
+                    text-align: center;
+                    vertical-align: top;
+                    background-color: gray;
+                }
+            </style>
+            <table class="tg">
+                <tr>
+                    <th class="th" rowspan="2">Item-Cust Matrix</th>
+                    <th class="th" colspan="4">사용자</th>
+                </tr>
+                <tr>
+                    <td class="tg-yw4l">{{kidsSchoolNames[0]}}</td>
+                    <td class="tg-yw4l">{{kidsSchoolNames[1]}}</td>
+                    <td class="tg-yw4l">{{kidsSchoolNames[2]}}</td>
+                    <td class="tg-yw4l">{{kidsSchoolNames[3]}}</td>
+                </tr>
+                <tbody>
+                    <tr ng-repeat="vector in NuriboxVectorSet" style="text-align:center">
+                        <td class="tg-e9v9">{{vector[5]}}</td>
+                        <td>{{getPurchaseStatusText(vector[0])}}</td>
+                        <td>{{getPurchaseStatusText(vector[1])}}</td>
+                        <td>{{getPurchaseStatusText(vector[2])}}</td>
+                        <td>{{getPurchaseStatusText(vector[3])}}</td>
+                    </tr>
+                </tbody>
+            </table>
+            <br/>
+            <h5> 구매를 1, 반송을 0으로 놓고, 아이템 별로 벡터 생성 </h5>
+            <h5> {{itemNames[0]}} = {{getVectorText(NuriboxVectorSet[0])}}, {{itemNames[1]}} = {{getVectorText(NuriboxVectorSet[1])}}
+                </h5>
+            <h5> {{itemNames[2]}} = {{getVectorText(NuriboxVectorSet[2])}}, {{itemNames[3]}} = {{getVectorText(NuriboxVectorSet[3])}}
+                </h5>
+            <br/>
+
+            <table class="tg">
+                <thead>
+                    <tr>
+                        <th class="tg-e9v9">Item-Item Matrix</th>
+                        <th class="tg-e9v9">{{itemNames[0]}}</th>
+                        <th class="tg-e9v9">{{itemNames[1]}}</th>
+                        <th class="tg-e9v9">{{itemNames[2]}}</th>
+                        <th class="tg-e9v9">{{itemNames[3]}}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="tg-yw4l">{{itemNames[0]}}</td>
+                        <td class="tg-e9v10">N/A</td>
+                        <td class="tg-yw4l">{{result[1]}}</td>
+                        <td class="tg-yw4l">{{result[2]}}</td>
+                        <td class="tg-yw4l">{{result[3]}}</td>
+                    </tr>
+                </tbody>
+            </table>
+            <br/>
+            <h5>
+                <Item-Item Matrix>
+            </h5>
+            <h5>기준이 되는 {{itemNames[0]}} 벡터와 나머지 아이템 별 벡터를 AND 연산한 값의 합을 구하면 </h5>
+            <h5>{{itemNames[0]}} - {{itemNames[1]}} = {{result[1]}}</h5>
+            <h5>{{itemNames[0]}} - {{itemNames[2]}} = {{result[2]}}</h5>
+            <h5>{{itemNames[0]}} - {{itemNames[3]}} = {{result[3]}}</h5>
+            <h5>이므로, {{itemNames[0]}}는 {{itemNames[highestValueIndex]}} Similarity가 가장 높음. → 추천</h5>
+            <br/>
+
+            <md-dialog-actions layout="row">
+                <md-button ng-click="close()">
+                    닫기
+                </md-button>
+            </md-dialog-actions>
+    </form>
+</md-dialog>
