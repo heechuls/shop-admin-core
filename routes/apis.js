@@ -134,6 +134,22 @@ router.get('/get-items/:userno', function (req, res) {
 		}
 	});
 });
+//카테고리 리스트
+
+router.get('/nec-items/:userno', function (req, res) {
+	var userno = req.params.userno;
+	console.log(userno+"입니다");
+	db.query('SELECT * FROM gd_n_nuribox_need_tools WHERE m_no = '+userno, function (err, rows, fields) {
+		if (err) {
+			console.log(new Date());
+			console.log(err);
+			res.send(err);
+		} else {
+	
+			res.send(rows);
+		}
+	});
+});
 //SELECT A.m_no, A.name, A.regdt, B.own FROM gd_member A, (SELECT count(C.nuribox_own_no) own FROM gd_n_nuribox_own_tools C WHERE m_no = m_no) B ORDER BY A.m_no;
 //보유 교구 목록
 router.get('/own-tool-list/:userno', function (req, res) {
@@ -195,6 +211,20 @@ router.get('/own-tool-list/:userno', function (req, res) {
 			console.log(err);
 			res.send(err);
 		} else {
+			res.send(rows);
+		}
+	});
+});
+//보유/필요 여부와 카테고리 목록
+router.get('/nec-list/:userno', function (req, res) {
+	var userno = req.params.userno;
+	db.query('SELECT * FROM  gd_n_nuribox_need_tools WHERE m_no='+userno, function (err, rows, fields) {
+		if (err) {
+			console.log(new Date());
+			console.log(err);
+			res.send(err);
+		} else {
+			window.alert(JSON.stringify(rows));
 			res.send(rows);
 		}
 	});

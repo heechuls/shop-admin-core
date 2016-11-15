@@ -65,9 +65,9 @@
 					<th class="tg-e9v9">카테고리</th>
 					<th class="tg-e9v8">제품명</th>
 				</tr>
-				<tr ng-repeat="ct in ctList">
-					<td class="tg-e9v9">{{ct.catnm}}</td>
-					<td class="tg-e9v8"></td>
+				<tr ng-repeat="item in necItems">
+					<td class="tg-e9v9">{{item.nuribox_need_category_no}}</td>
+					<td class="tg-e9v8">{{item.nuribox_need_nm}}</td>
 				</tr>
 
 			</table>
@@ -99,28 +99,7 @@
 			<ul class="images" ng-repeat="image in images">
 				<li><img src={{image.nuribox_own_image_url}} width="auto" height="150px"></li>
 			</ul>
-			<md-toolbar style="margin-top:10px;">
-				<div class="md-toolbar-tools">
-					<h4>
-						<span>보유 교구</span>
-					</h4>
-					<span flex=""></span>
-					<md-button ng-click="addTool($event)" class="md-raised">
-						교구 추가
-					</md-button>
-				</div>
-			</md-toolbar>
-			<table class="tg" style="padding-top:10px; min-width:200px;">
-				<tr>
-					<th class="tg-e9v9">카테고리</th>
-					<th class="tg-e9v8">제품명</th>
-				</tr>
-				<tr ng-repeat="ct in ctList">
-					<td class="tg-e9v9">{{ct.catnm}}</td>
-					<td class="tg-e9v8">{{ct.items}}</td>
-				</tr>
 
-			</table>
 		</md-dialog-content>
 
 		<md-dialog-actions layout="row">

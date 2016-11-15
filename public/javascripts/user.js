@@ -2,7 +2,7 @@ var app = angular.module('shopAdminCore')
 app.controller('userController', function ($scope, $mdDialog, $http) {
   var nameList = ['피오나어린이집', '비구스어린이집', '현대몬테소리', '보성어린이집', '슈렉어린이집']
   var ctList = []
-  function createRandomItem () {
+  function createRandomItem() {
     var registeredDate = '2016.09.15',
       kidsSchoolName = nameList[Math.floor(Math.random() * 4)],
       noOfEquippedTools = '2개',
@@ -25,7 +25,7 @@ app.controller('userController', function ($scope, $mdDialog, $http) {
   $scope.rowCollection = []
   $scope.test = 'test'
 
-  function convertData (response) {
+  function convertData(response) {
     var dataSet = []
     for (var i in response.data) {
       var data = {
@@ -42,19 +42,29 @@ app.controller('userController', function ($scope, $mdDialog, $http) {
       console.log(data)
     }
     $scope.rowCollection = dataSet
-  // $scope.test = "done"
+    // $scope.test = "done"
   }
-  $scope.fetchInitialData = function () {
+
+  //상세보기 클릭시 모달 띄움
+  $scope.fetchNecList = function (userno) {
     $http({
       method: 'GET',
-      url: GLOBALS.API_HOME + 'user-list-all'
-    }).then(function successCallback (response) {
-      convertData(response)
-    }, function errorCallback (response) {
-      // called asynchronously if an error occurs
-      // or server returns response with an error status.
-    })
-  }
+      url: GLOBALS.API_HOME + 'nec-list/' + userno
+    }).then(function successCallback(response) {
+      window.alert(JSON.stringify(response));
+    }, function errorCallback(response) { })
+  },
+    $scope.fetchInitialData = function () {
+      $http({
+        method: 'GET',
+        url: GLOBALS.API_HOME + 'user-list-all'
+      }).then(function successCallback(response) {
+        convertData(response)
+      }, function errorCallback(response) {
+        // called asynchronously if an error occurs
+        // or server returns response with an error status.
+      })
+    }
 
   $scope.search = function (searchKeyword) {
     if (searchKeyword == null || searchKeyword.length == 0)
@@ -64,9 +74,9 @@ app.controller('userController', function ($scope, $mdDialog, $http) {
     $http({
       method: 'GET',
       url: GLOBALS.API_HOME + api + searchKeyword
-    }).then(function successCallback (response) {
+    }).then(function successCallback(response) {
       convertData(response)
-    }, function errorCallback (response) {
+    }, function errorCallback(response) {
       // called asynchronously if an error occurs
       // or server returns response with an error status.
     })
@@ -111,9 +121,9 @@ app.controller('userController', function ($scope, $mdDialog, $http) {
     })
   }
 
-  function ToolsDialogController ($scope, $mdDialog, showTools, row) {
+  function ToolsDialogController($scope, $mdDialog, showTools, row) {
     $scope.images = []
-    function convertImageList (response) {
+    function convertImageList(response) {
       var dataSet = []
       for (var i in response.data) {
         var data = {
@@ -125,13 +135,38 @@ app.controller('userController', function ($scope, $mdDialog, $http) {
       console.log(response)
       $scope.images = dataSet
     }
+    $scope.necItems
+    function fetchOwnNeedToolList() {
+      $http.get(GLOBALS.API_HOME + 'nec-items/' + row.m_no)
+        .success(function (data, status, headers, config) {
+          //카테고리와 매칭
+          var tmp = data;
+          $http.get(GLOBALS.API_HOME + 'category-list')
+            .success(function (ctData, status, headers, config) {
+     
+              for (var i =0;i<tmp.length;i++) {
+                for (var j =0;j<ctData.length;j++ ){
+                  //카테고리 매칭
+  
+                  if (ctData[j].sno == tmp[i].nuribox_need_category_no) {
+                    tmp[i].nuribox_need_category_no = ctData[j].catnm;
+                    break;
+                  }
+                }
+              }
+              $scope.necItems = tmp;
+            });
 
-    fetchOwnNeedToolList = function () {}
+
+          
+
+        })
+    }
     $scope.items
-    function fetchOwnToolList () {
+    function fetchOwnToolList() {
       $http.get(GLOBALS.API_HOME + 'get-items/' + row.m_no)
         .success(function (data, status, headers, config) {
-          $scope.items = data
+          $scope.items = data;
           // ctList 받아오기 ~
           $http.get(GLOBALS.API_HOME + 'category-list')
             .success(function (data, status, headers, config) {
@@ -144,7 +179,7 @@ app.controller('userController', function ($scope, $mdDialog, $http) {
         })
     }
 
-    function fetchOwnList (ctId) {
+    function fetchOwnList(ctId) {
       for (var item in $scope.items) {
         if (item.nuribox_own_category_no == ctId) {
           result += item.nuribox_own_nm + ' '
@@ -156,15 +191,16 @@ app.controller('userController', function ($scope, $mdDialog, $http) {
       $http({
         method: 'GET',
         url: GLOBALS.API_HOME + 'own-tool-image-list/' + row.m_no
-      }).then(function successCallback (response) {
+      }).then(function successCallback(response) {
         convertImageList(response)
-      }, function errorCallback (response) {})
+      }, function errorCallback(response) { })
     }
 
     $scope.fetchInitialData = function () {
       fetchOwnNeedToolList()
       fetchOwnToolImageList()
       fetchOwnToolList()
+      fetchNeedToolList()
     }
     $scope.hide = function () {
       $mdDialog.hide()
@@ -193,7 +229,7 @@ app.controller('userController', function ($scope, $mdDialog, $http) {
       })
     }
   }
-  function AddToolController ($scope, $mdDialog, showTools, row) {
+  function AddToolController($scope, $mdDialog, showTools, row) {
     $scope.tools = []
     $scope.selectedToolCategory = null
     $scope.toolName = ''
@@ -213,10 +249,10 @@ app.controller('userController', function ($scope, $mdDialog, $http) {
           toolName: toolName,
           m_no: row.m_no
         }
-      }).then(function successCallback (response) {
+      }).then(function successCallback(response) {
         if (done != null)
           return done()
-      }, function errorCallback (response) {
+      }, function errorCallback(response) {
         alert('DB 접속에 문제가 생겼습니다.')
         if (done != null)
           return done()
@@ -240,15 +276,15 @@ app.controller('userController', function ($scope, $mdDialog, $http) {
     }
   }
 
-  function NuriboxDialogController ($scope, $mdDialog, showNuribox, row) {
+  function NuriboxDialogController($scope, $mdDialog, showNuribox, row) {
     $scope.Nuribox = []
     /*        NuriboxList.isThirdFiltered($http, 3, 2, function(result){
                 console.log(result)
             });*/
     $scope.showNuriboxDetail = function (nuribox_item, ev) {
-      if(nuribox_item.selected_status == NuriboxList.STATUS_NEXT_SELECTED ||
-      nuribox_item.selected_status == NuriboxList.STATUS_NONE ||
-      nuribox_item.selected_status == NuriboxList.STATUS_FIRST_OWN
+      if (nuribox_item.selected_status == NuriboxList.STATUS_NEXT_SELECTED ||
+        nuribox_item.selected_status == NuriboxList.STATUS_NONE ||
+        nuribox_item.selected_status == NuriboxList.STATUS_FIRST_OWN
       )
         return;
 
@@ -289,7 +325,7 @@ app.controller('userController', function ($scope, $mdDialog, $http) {
             status = '보유'
             first_filtering = '제거'
             selected_status = NuriboxList.STATUS_FIRST_OWN
-          }else {
+          } else {
             if (j < NuriboxList.MAX_NURIBOX_RECOMMENDED_ITEM) {
               selected_item = NuriboxList.pickClosestrNuriboxItem(NuriboxTestSet[j])
               second_filtering = selected_item.goodsnm
@@ -298,30 +334,6 @@ app.controller('userController', function ($scope, $mdDialog, $http) {
             else selected_status = NuriboxList.STATUS_NEXT_SELECTED
           }
 
-          // Third Filtering with test function
-          /*
-          if(selected_status == NuriboxList.STATUS_SECOND_SELECTED){ //Third Filtering
-              var k = 1
-              while(NuriboxList.isThirdFiltered(selected_item.tool_features)){
-                  if (k == 3) { //if all left items are not matches properly, move next category
-                      status = ""
-                      first_filtering = "제거"
-                      second_filtering = "", third_filtering = ""
-                      selected_item = undefined
-                      selected_status = NuriboxList.STATUS_FIRST_OWN
-                      break
-                  }
-
-                  NuriboxTestSet[j][selected_item.highestValueIndex] = undefined //except the return reason matched item                            
-                  selected_item = NuriboxList.pickClosestrNuriboxItem(NuriboxTestSet[j])
-                  third_filtering = selected_item.goodsnm
-                  selected_status = NuriboxList.STATUS_THIRD_SELECTED;                         
-                  k++
-              }
-              if(selected_status != NuriboxList.STATUS_FIRST_OWN){
-                 j++ //Selected item counted
-              }
-          }*/
 
           var nuribox_item = {
             category: list[i].catnm,
@@ -333,11 +345,11 @@ app.controller('userController', function ($scope, $mdDialog, $http) {
             remark: NuriboxList.getStatusText(selected_status, selected_item.tool_features),
             selected_item: selected_item,
             selected_status: selected_status,
-            row:row,
-            NuriboxVectorSet : NuriboxTestSetOrg[order], //Deliver Original Vector as NuriboxVectorSet is getting manipulated
-            second_filtering_result: selected_status == NuriboxList.STATUS_SECOND_SELECTED || 
+            row: row,
+            NuriboxVectorSet: NuriboxTestSetOrg[order], //Deliver Original Vector as NuriboxVectorSet is getting manipulated
+            second_filtering_result: selected_status == NuriboxList.STATUS_SECOND_SELECTED ||
             selected_status == NuriboxList.STATUS_FIRST_NEED ? selected_item.result.slice(0) : undefined,
-            highestValueIndex:selected_item.highestValueIndex
+            highestValueIndex: selected_item.highestValueIndex
           }
 
           if (selected_status == NuriboxList.STATUS_SECOND_SELECTED) { // Third Filtering
@@ -346,6 +358,7 @@ app.controller('userController', function ($scope, $mdDialog, $http) {
           }
           nuribox_list.push(nuribox_item)
         }
+        //end for
         $scope.Nuribox = nuribox_list
       })
     }
@@ -375,27 +388,27 @@ app.controller('userController', function ($scope, $mdDialog, $http) {
           // recursively find the right match till the sample exists
           thirdFiltering(param.$scope, $http, m_no, param.index, NuriboxVectorSet, param.nuribox_item, ++param.count) // recursive       
         },
-          function (param) {
-            if (param.count != 1) // When third filtering triggered, then replace the current second filtered item
-              param.$scope.Nuribox[param.index] = param.nuribox_item
-          })
+        function (param) {
+          if (param.count != 1) // When third filtering triggered, then replace the current second filtered item
+            param.$scope.Nuribox[param.index] = param.nuribox_item
+        })
     }
 
     var thirdFilteringPromise = function ($scope, $http, m_no, index, NuriboxVectorSet, nuribox_item, count) {
       return new Promise(function (resolve, reject) {
         NuriboxList.isThirdFiltered($http, m_no, nuribox_item.selected_item.tool_features, nuribox_item, function (result) {
           if (count == 3) {
-            reject({ $scope, nuribox_item, index, count})
+            reject({ $scope, nuribox_item, index, count })
             return
           }
           if (result)
-            resolve({$scope, nuribox_item, index, count})
-          else reject({$scope, nuribox_item, index, count})
+            resolve({ $scope, nuribox_item, index, count })
+          else reject({ $scope, nuribox_item, index, count })
         })
       })
     }
   }
-  function NuriboxDetailDialogController ($scope, $mdDialog, showNuribox, nuribox_item) {
+  function NuriboxDetailDialogController($scope, $mdDialog, showNuribox, nuribox_item) {
 
     $scope.kidsSchoolNames = [nuribox_item.NuriboxVectorSet[0][7], nuribox_item.NuriboxVectorSet[1][7], nuribox_item.NuriboxVectorSet[2][7], nuribox_item.NuriboxVectorSet[3][7]];
     $scope.itemNames = [nuribox_item.NuriboxVectorSet[0][5], nuribox_item.NuriboxVectorSet[1][5], nuribox_item.NuriboxVectorSet[2][5], nuribox_item.NuriboxVectorSet[3][5]];
@@ -403,11 +416,11 @@ app.controller('userController', function ($scope, $mdDialog, $http) {
     $scope.NuriboxVectorSet = nuribox_item.NuriboxVectorSet;
     $scope.highestValueIndex = nuribox_item.highestValueIndex;
 
-    $scope.getPurchaseStatusText = function(value){
-        return value == 1 ? "구매" : "반송";
+    $scope.getPurchaseStatusText = function (value) {
+      return value == 1 ? "구매" : "반송";
     }
-    $scope.getVectorText = function(vector){
-        return "( " + vector[0] + ", " + vector[1] + ", " + vector[2] + ", " + vector[3] + " )"
+    $scope.getVectorText = function (vector) {
+      return "( " + vector[0] + ", " + vector[1] + ", " + vector[2] + ", " + vector[3] + " )"
     }
 
     $scope.close = function () {
@@ -434,9 +447,9 @@ var ProductCategory = {
     $http({
       method: 'GET',
       url: GLOBALS.API_HOME + 'category-list'
-    }).then(function successCallback (response) {
+    }).then(function successCallback(response) {
       done(ProductCategory.convertCategoryList(response))
-    }, function errorCallback (response) {})
+    }, function errorCallback(response) { })
   }
 }
 
@@ -445,11 +458,12 @@ var NuriboxList = {
     var dataSet = []
     for (var i in response.data) {
       var own_or_need = NuriboxList.NURIBOX_NOT_OWN_AND_NEED
-      if (response.data[i].need_cnt > 0)
+      if (response.data[i].need_cnt > 0){
         own_or_need = NuriboxList.NURIBOX_NEED
-      else if (response.data[i].own_cnt > 0)
+      }
+      else if (response.data[i].own_cnt > 0){
         own_or_need = NuriboxList.NURIBOX_OWN
-
+      }
       var data = {
         catnm: response.data[i].catnm,
         sno: response.data[i].sno,
@@ -464,9 +478,9 @@ var NuriboxList = {
     $http({
       method: 'GET',
       url: GLOBALS.API_HOME + 'nuribox-list/' + userno
-    }).then(function successCallback (response) {
+    }).then(function successCallback(response) {
       done(NuriboxList.convertNuriboxList(response))
-    }, function errorCallback (response) {})
+    }, function errorCallback(response) { })
   },
 
   pickClosestrNuriboxItem: function (NuriboxVectorSet) {
@@ -491,7 +505,7 @@ var NuriboxList = {
       goodsnm: NuriboxVectorSet[highestValueIndex][5],
       tool_features: NuriboxVectorSet[highestValueIndex][6],
       highestValueIndex: highestValueIndex,
-      result:result
+      result: result
     }
   },
 
@@ -535,10 +549,10 @@ var NuriboxList = {
         m_no: m_no,
         return_type: return_type
       }
-    }).then(function successCallback (response) {
+    }).then(function successCallback(response) {
       if (done != null)
         return done(response.data[0].count > 0 ? true : false)
-    }, function errorCallback (response) {
+    }, function errorCallback(response) {
       if (done != null)
         return done(false)
     })
