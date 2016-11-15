@@ -186,14 +186,6 @@ app.config(function ($stateProvider, $urlRouterProvider) {
             };
 
 
-            function fetchOwnList(ctId) {
-                for (var item in $scope.items) {
-                    if (item.nuribox_own_category_no == ctId) {
-                        result += item.nuribox_own_nm + " ";
-                    }
-                }
-                return "dddd";
-            }
             fetchOwnToolImageList = function () {
                 $http({
                     method: 'GET',

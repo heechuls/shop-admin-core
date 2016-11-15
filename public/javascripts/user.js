@@ -137,17 +137,18 @@ app.controller('userController', function ($scope, $mdDialog, $http) {
     }
     $scope.necItems
     function fetchOwnNeedToolList() {
+
       $http.get(GLOBALS.API_HOME + 'nec-items/' + row.m_no)
         .success(function (data, status, headers, config) {
           //카테고리와 매칭
           var tmp = data;
           $http.get(GLOBALS.API_HOME + 'category-list')
             .success(function (ctData, status, headers, config) {
-     
-              for (var i =0;i<tmp.length;i++) {
-                for (var j =0;j<ctData.length;j++ ){
+
+              for (var i = 0; i < tmp.length; i++) {
+                for (var j = 0; j < ctData.length; j++) {
                   //카테고리 매칭
-  
+
                   if (ctData[j].sno == tmp[i].nuribox_need_category_no) {
                     tmp[i].nuribox_need_category_no = ctData[j].catnm;
                     break;
@@ -156,14 +157,40 @@ app.controller('userController', function ($scope, $mdDialog, $http) {
               }
               $scope.necItems = tmp;
             });
-
-
-          
-
         })
+    }
+
+    function fetchMans() {
+      $http.get(GLOBALS.API_HOME + 'get-recent-item/' + row.m_no)
+        .success(function (data, status, headers, config) {
+          //카테고리와 매칭
+          //makeTestSet(data);
+        })
+    }
+ 
+    function makeTestSet(input) {
+      var result;
+
+      for (var i = 0; i < 4; i++) {
+        for (var j = 0; j < 4; j++) {
+          var isOrder;
+          if (input.datas[j + i * 4].is_order == 1)
+            isOrder = 1;
+          else
+            isOrder = 0;
+          result[i][j] = isOrder;
+        }
+        result[i][4] = input.items[i].goodsno;
+        result[i][5] = input.items[i].goodsnm;
+        result[i][6] = input.items[i].tool_features;
+        result[i][7] = input.mems[i].nickname;
+
+      }
+      window.alert(JSON.stringify(result));
     }
     $scope.items
     function fetchOwnToolList() {
+
       $http.get(GLOBALS.API_HOME + 'get-items/' + row.m_no)
         .success(function (data, status, headers, config) {
           $scope.items = data;
@@ -171,22 +198,14 @@ app.controller('userController', function ($scope, $mdDialog, $http) {
           $http.get(GLOBALS.API_HOME + 'category-list')
             .success(function (data, status, headers, config) {
               for (var myData in data) {
-                // window.alert("ddddd")
-                myData.items = fetchOwnList(myData.sno)
+                
+                myData.items
                 $scope.ctList.push(myData)
               }
             })
         })
     }
 
-    function fetchOwnList(ctId) {
-      for (var item in $scope.items) {
-        if (item.nuribox_own_category_no == ctId) {
-          result += item.nuribox_own_nm + ' '
-        }
-      }
-      return 'dddd'
-    }
     fetchOwnToolImageList = function () {
       $http({
         method: 'GET',
@@ -200,7 +219,7 @@ app.controller('userController', function ($scope, $mdDialog, $http) {
       fetchOwnNeedToolList()
       fetchOwnToolImageList()
       fetchOwnToolList()
-      fetchNeedToolList()
+      fetchMans()
     }
     $scope.hide = function () {
       $mdDialog.hide()
@@ -348,7 +367,7 @@ app.controller('userController', function ($scope, $mdDialog, $http) {
             row: row,
             NuriboxVectorSet: NuriboxTestSetOrg[order], //Deliver Original Vector as NuriboxVectorSet is getting manipulated
             second_filtering_result: selected_status == NuriboxList.STATUS_SECOND_SELECTED ||
-            selected_status == NuriboxList.STATUS_FIRST_NEED ? selected_item.result.slice(0) : undefined,
+              selected_status == NuriboxList.STATUS_FIRST_NEED ? selected_item.result.slice(0) : undefined,
             highestValueIndex: selected_item.highestValueIndex
           }
 
@@ -458,10 +477,10 @@ var NuriboxList = {
     var dataSet = []
     for (var i in response.data) {
       var own_or_need = NuriboxList.NURIBOX_NOT_OWN_AND_NEED
-      if (response.data[i].need_cnt > 0){
+      if (response.data[i].need_cnt > 0) {
         own_or_need = NuriboxList.NURIBOX_NEED
       }
-      else if (response.data[i].own_cnt > 0){
+      else if (response.data[i].own_cnt > 0) {
         own_or_need = NuriboxList.NURIBOX_OWN
       }
       var data = {

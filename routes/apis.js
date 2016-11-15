@@ -124,7 +124,7 @@ router.get('/ct-list-all', function (req, res) {
 router.get('/get-items/:userno', function (req, res) {
 	var userno = req.params.userno;
 	console.log(userno);
-	db.query('SELECT * FROM gd_n_nuribox_own_tools WHERE m_no = '+userno, function (err, rows, fields) {
+	db.query('SELECT * FROM gd_n_nuribox_own_tools WHERE m_no = ' + userno, function (err, rows, fields) {
 		if (err) {
 			console.log(new Date());
 			console.log(err);
@@ -134,18 +134,54 @@ router.get('/get-items/:userno', function (req, res) {
 		}
 	});
 });
+//최근아이템
+router.get('/get-recent-item/:userno', function (req, res) {
+	var userno = req.params.userno;
+	db.query('SELECT gd_n_nuribox_item.m_no,goodsno,nickname FROM gd_n_nuribox_item LEFT JOIN gd_member ON gd_n_nuribox_item.m_no = gd_member.m_no WHERE gd_n_nuribox_item.m_no <> ' + userno + ' AND goodsno=(SELECT goodsno FROM gd_n_nuribox_item WHERE gd_n_nuribox_item.m_no = ' + userno + ' AND is_order=1 LIMIT 1) GROUP BY gd_n_nuribox_item.m_no ORDER BY gd_n_nuribox_item.m_no LIMIT 4', function (err, rows, fields) {
+		if (err) {
+			console.log(new Date());
+			res.send(err);
+		} else {
+			var mems = rows;
+			var tmp={};
+			tmp.mems = rows;
+			db.query('SELECT goodsno,is_order,return_type,m_no FROM gd_n_nuribox_item WHERE m_no IN (SELECT m_no FROM gd_n_nuribox_item WHERE m_no <> ' + userno + ' AND goodsno=(SELECT goodsno FROM gd_n_nuribox_item WHERE m_no = ' + userno + ' AND is_order=1 LIMIT 1) GROUP BY m_no) AND goodsno IN (SELECT goodsno FROM gd_n_nuribox_item WHERE m_no= ' + mems[0].m_no + ' ORDER BY is_order) ORDER BY m_no, goodsno', function (err, rows, fields) {
+				if (err) {
+					console.log(new Date());
+					console.log("error!!!!!!!" + err);
+				} else {
+			
+					tmp.datas= rows;
+					db.query('SELECT gd_n_nuribox_item.goodsno, gd_goods.goodsnm,tool_features FROM gd_n_nuribox_item LEFT JOIN gd_goods ON gd_n_nuribox_item.goodsno =gd_goods.goodsno WHERE m_no= ' + mems[0].m_no + ' GROUP BY goodsno ORDER BY gd_n_nuribox_item.goodsno', function (err, rows, fields) {
+						if (err) {
+							console.log(new Date());
+							console.log("error!!!!!!!" + err);
+						} else {
+							console.log("해냈다");
+							
+							tmp.items = rows;
+							console.log(tmp);
+							res.send(tmp);
+
+						}
+					});
+				}
+			});
+		}
+	});
+});
 //카테고리 리스트
 
 router.get('/nec-items/:userno', function (req, res) {
 	var userno = req.params.userno;
-	console.log(userno+"입니다");
-	db.query('SELECT * FROM gd_n_nuribox_need_tools WHERE m_no = '+userno, function (err, rows, fields) {
+	console.log(userno + "입니다");
+	db.query('SELECT * FROM gd_n_nuribox_need_tools WHERE m_no = ' + userno, function (err, rows, fields) {
 		if (err) {
 			console.log(new Date());
 			console.log(err);
 			res.send(err);
 		} else {
-	
+
 			res.send(rows);
 		}
 	});
@@ -218,7 +254,7 @@ router.get('/own-tool-list/:userno', function (req, res) {
 //보유/필요 여부와 카테고리 목록
 router.get('/nec-list/:userno', function (req, res) {
 	var userno = req.params.userno;
-	db.query('SELECT * FROM  gd_n_nuribox_need_tools WHERE m_no='+userno, function (err, rows, fields) {
+	db.query('SELECT * FROM  gd_n_nuribox_need_tools WHERE m_no=' + userno, function (err, rows, fields) {
 		if (err) {
 			console.log(new Date());
 			console.log(err);
