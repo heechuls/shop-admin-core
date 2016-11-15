@@ -4,6 +4,7 @@ app.controller('userController', function ($scope, $mdDialog, $http) {
   var ctList = []
   var NuriboxTestSet = []
   var NuriboxTestSetOrg = []
+  var testDummy = [];
   function createRandomItem() {
     var registeredDate = '2016.09.15',
       kidsSchoolName = nameList[Math.floor(Math.random() * 4)],
@@ -300,31 +301,8 @@ app.controller('userController', function ($scope, $mdDialog, $http) {
 
 
 
-    function resetTestSet() {
-      $http.get(GLOBALS.API_HOME + 'get-recent-item/' + row.m_no)
-        .success(function (data, status, headers, config) {
-          var tmp = makeTestSet(data);
-          //순서 바꾸기
-          for (var i = 0; i < tmp.length; i++) {
-            if (data.target == tmp[i][4]) {
-              //swap
-              var tmpRow = tmp[i].slice(0);
-              tmp[i] = tmp[0].slice(0);
-              tmp[0] = tmpRow;
-              break;
-            }
-          }
-
-          for (var i = 0; i < 4; i++) {
-            NuriboxTestSetOrg[i] = tmp.slice(0);
-          }
-          for (var i in NuriboxTestSetOrg)
-            NuriboxTestSet[i] = NuriboxTestSetOrg[i].slice(0)
-
-
+    function resetTestSet(mno) {
           miningNuribox();
-        })
-
     }
 
     function makeTestSet(input) {
@@ -338,7 +316,6 @@ app.controller('userController', function ($scope, $mdDialog, $http) {
             isOrder = 1;
           else
             isOrder = 0;
-
           result[i][j] = isOrder;
         }
         result[i][4] = input.items[i].goodsno;
@@ -350,8 +327,42 @@ app.controller('userController', function ($scope, $mdDialog, $http) {
 
       return result
     }
+    function getList(count, result, list) {
+      var sno = list[count].sno;
+      var mno = row.m_no;
+      $http.get(GLOBALS.API_HOME + 'get-recent-item/' + mno + 'a' + sno)
+        .success(function (data, status, headers, config) {
+          
+          var tmp = makeTestSet(data);
+          //순서 바꾸기
+          for (var i = 0; i < tmp.length; i++) {
+            if (data.target == tmp[i][4]) {
+              //swap
+              var tmpRow = tmp[i].slice(0);
+              tmp[i] = tmp[0].slice(0);
+              tmp[0] = tmpRow;
+              break;
+            }
+          }
+          NuriboxTestSetOrg[count] = tmp.slice(0);
+          if (count < 4) {
+            return getList(++count, result, list);
+          } else {
+            if(4>NuriboxTestSetOrg.length){
+                NuriboxTestSetOrg = testDummy;            
+            }
+            for (var i in NuriboxTestSetOrg)
+              NuriboxTestSet[i] = NuriboxTestSetOrg[i].slice(0)
+            return result;
+          }
+        }).error(function(err){
+          window.alert("dd");
+        })
+    }
     function miningNuribox() {
       NuriboxList.fetchNuriboxList($http, row.m_no, function (list) {
+        var tmpResult;
+        getList(0,tmpResult,list);
         var nuribox_list = [], j = 0, order = 0, selected_status = NuriboxList.STATUS_NONE
 
         for (var i in list) {
@@ -409,7 +420,7 @@ app.controller('userController', function ($scope, $mdDialog, $http) {
       })
     }
     var createNuribox = function () {
-      resetTestSet(); // Test purpose only, this has to be replaced with the fucation brining initial vector data
+      resetTestSet(row.m_no); // Test purpose only, this has to be replaced with the fucation brining initial vector data
     }
     $scope.hide = function () {
       $mdDialog.hide()
@@ -608,14 +619,6 @@ var NuriboxList = {
   }
 }
 
-// This Test Set has to be real data to be filled in
-var NuriboxTestSetOrg =
-  [
-    [1, 1, 1, 0, 1, '전사 헤드기어', 1, '챌린저어린이집'], // [4] goodsno, [5] goodsnm, [6] tool_features, [7] 어린이집 이름
-    [0, 0, 1, 0, 2, '야구 헤드기어', 2, 'A어린이집'],
-    [1, 1, 1, 1, 3, '병원놀이', 2, 'B어린이집'],
-    [1, 0, 0, 1, 4, '리얼성교육 인형', 8, 'C어린이집']
-  ]
 
 
 
