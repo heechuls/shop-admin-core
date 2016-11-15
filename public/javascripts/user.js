@@ -161,42 +161,9 @@ app.controller('userController', function ($scope, $mdDialog, $http) {
         })
     }
 
-    function fetchMans() {
 
-    }
 
-    function resetTestSet () {
-      $http.get(GLOBALS.API_HOME + 'get-recent-item/' + row.m_no)
-        .success(function (data, status, headers, config) {
-          //카테고리와 매칭
-          NuriboxTestSet = makeTestSet(data);
-        })
 
-    }
-
-    function makeTestSet(input) {
-      var result = [];
-
-      for (var i = 0; i < 4; i++) {
-        result[i] = new Array();
-        for (var j = 0; j < 4; j++) {
-          var isOrder = 0;
-          if (input.datas[j + i * 4].is_order == 1)
-            isOrder = 1;
-          else
-            isOrder = 0;
-
-          result[i][j] = isOrder;
-        }
-        result[i][4] = input.items[i].goodsno;
-        result[i][5] = input.items[i].goodsnm;
-        result[i][6] = input.items[i].tool_features;
-        result[i][7] = input.mems[i].nickname;
-
-      }
-      window.alert("dd");
-      return result
-    }
     $scope.items
     function fetchOwnToolList() {
 
@@ -256,7 +223,7 @@ app.controller('userController', function ($scope, $mdDialog, $http) {
       })
     }
   }
-  function AddToolController($scope, $mdDialog, showTools, row) {
+  function AddToolController($scope, $mdDialog, $http, showTools, row) {
     $scope.tools = []
     $scope.selectedToolCategory = null
     $scope.toolName = ''
@@ -328,11 +295,41 @@ app.controller('userController', function ($scope, $mdDialog, $http) {
         fullscreen: $scope.customFullscreen // Only for -xs, -sm breakpoints.
       })
     };
+    function resetTestSet() {
+      $http.get(GLOBALS.API_HOME + 'get-recent-item/' + row.m_no)
+        .success(function (data, status, headers, config) {
+          NuriboxTestSet = makeTestSet(data);
+          window.alert(JSON.stringify(NuriboxTestSet));
+          miningNuribox();
+        })
 
-    var createNuribox = function () {
-      resetTestSet(); // Test purpose only, this has to be replaced with the fucation brining initial vector data
+    }
 
-      NuriboxList.fetchNuriboxList($http, row.m_no, function (list) {
+    function makeTestSet(input) {
+      var result = [];
+
+      for (var i = 0; i < 4; i++) {
+        result[i] = new Array();
+        for (var j = 0; j < 4; j++) {
+          var isOrder = 0;
+          if (input.datas[j + i * 4].is_order == 1)
+            isOrder = 1;
+          else
+            isOrder = 0;
+
+          result[i][j] = isOrder;
+        }
+        result[i][4] = input.items[i].goodsno;
+        result[i][5] = input.items[i].goodsnm;
+        result[i][6] = input.items[i].tool_features;
+        result[i][7] = input.mems[i].nickname;
+
+      }
+
+      return result
+    }
+    function miningNuribox () {
+            NuriboxList.fetchNuriboxList($http, row.m_no, function (list) {
         var nuribox_list = [], j = 0, order = 0, selected_status = NuriboxList.STATUS_NONE
 
         for (var i in list) {
@@ -389,6 +386,9 @@ app.controller('userController', function ($scope, $mdDialog, $http) {
         $scope.Nuribox = nuribox_list
       })
     }
+    var createNuribox = function () {
+      resetTestSet(); // Test purpose only, this has to be replaced with the fucation brining initial vector data
+    }
     $scope.hide = function () {
       $mdDialog.hide()
     }
@@ -435,7 +435,7 @@ app.controller('userController', function ($scope, $mdDialog, $http) {
       })
     }
   }
-  function NuriboxDetailDialogController($scope, $mdDialog, showNuribox, nuribox_item) {
+  function NuriboxDetailDialogController($scope, $mdDialog, $http, showNuribox, nuribox_item) {
 
     $scope.kidsSchoolNames = [nuribox_item.NuriboxVectorSet[0][7], nuribox_item.NuriboxVectorSet[1][7], nuribox_item.NuriboxVectorSet[2][7], nuribox_item.NuriboxVectorSet[3][7]];
     $scope.itemNames = [nuribox_item.NuriboxVectorSet[0][5], nuribox_item.NuriboxVectorSet[1][5], nuribox_item.NuriboxVectorSet[2][5], nuribox_item.NuriboxVectorSet[3][5]];
@@ -594,5 +594,6 @@ var NuriboxTestSetOrg =
     [1, 1, 1, 1, 3, '병원놀이', 2, 'B어린이집'],
     [1, 0, 0, 1, 4, '리얼성교육 인형', 8, 'C어린이집']
   ]
+
 
 
