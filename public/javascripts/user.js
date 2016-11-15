@@ -3,6 +3,7 @@ app.controller('userController', function ($scope, $mdDialog, $http) {
   var nameList = ['피오나어린이집', '비구스어린이집', '현대몬테소리', '보성어린이집', '슈렉어린이집']
   var ctList = []
   var NuriboxTestSet = []
+  var NuriboxTestSetOrg = []
   function createRandomItem() {
     var registeredDate = '2016.09.15',
       kidsSchoolName = nameList[Math.floor(Math.random() * 4)],
@@ -295,11 +296,21 @@ app.controller('userController', function ($scope, $mdDialog, $http) {
         fullscreen: $scope.customFullscreen // Only for -xs, -sm breakpoints.
       })
     };
+   
+
+
+
     function resetTestSet() {
       $http.get(GLOBALS.API_HOME + 'get-recent-item/' + row.m_no)
         .success(function (data, status, headers, config) {
-          NuriboxTestSet = makeTestSet(data);
-          window.alert(JSON.stringify(NuriboxTestSet));
+          var tmp= makeTestSet(data);
+          for (var i=0;i<4;i++){
+            NuriboxTestSetOrg[i] = tmp.slice(0);
+          }
+          for (var i in NuriboxTestSetOrg)
+            NuriboxTestSet[i] = NuriboxTestSetOrg[i].slice(0)
+
+          window.alert(JSON.stringify(NuriboxTestSet));  
           miningNuribox();
         })
 
