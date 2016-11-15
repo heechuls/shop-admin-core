@@ -2,6 +2,7 @@ var app = angular.module('shopAdminCore')
 app.controller('userController', function ($scope, $mdDialog, $http) {
   var nameList = ['피오나어린이집', '비구스어린이집', '현대몬테소리', '보성어린이집', '슈렉어린이집']
   var ctList = []
+  var NuriboxTestSet = []
   function createRandomItem() {
     var registeredDate = '2016.09.15',
       kidsSchoolName = nameList[Math.floor(Math.random() * 4)],
@@ -161,23 +162,30 @@ app.controller('userController', function ($scope, $mdDialog, $http) {
     }
 
     function fetchMans() {
+
+    }
+
+    function resetTestSet () {
       $http.get(GLOBALS.API_HOME + 'get-recent-item/' + row.m_no)
         .success(function (data, status, headers, config) {
           //카테고리와 매칭
-          //makeTestSet(data);
+          NuriboxTestSet = makeTestSet(data);
         })
+
     }
- 
+
     function makeTestSet(input) {
-      var result;
+      var result = [];
 
       for (var i = 0; i < 4; i++) {
+        result[i] = new Array();
         for (var j = 0; j < 4; j++) {
-          var isOrder;
+          var isOrder = 0;
           if (input.datas[j + i * 4].is_order == 1)
             isOrder = 1;
           else
             isOrder = 0;
+
           result[i][j] = isOrder;
         }
         result[i][4] = input.items[i].goodsno;
@@ -186,7 +194,8 @@ app.controller('userController', function ($scope, $mdDialog, $http) {
         result[i][7] = input.mems[i].nickname;
 
       }
-      window.alert(JSON.stringify(result));
+      window.alert("dd");
+      return result
     }
     $scope.items
     function fetchOwnToolList() {
@@ -198,8 +207,7 @@ app.controller('userController', function ($scope, $mdDialog, $http) {
           $http.get(GLOBALS.API_HOME + 'category-list')
             .success(function (data, status, headers, config) {
               for (var myData in data) {
-                
-                myData.items
+
                 $scope.ctList.push(myData)
               }
             })
@@ -219,7 +227,7 @@ app.controller('userController', function ($scope, $mdDialog, $http) {
       fetchOwnNeedToolList()
       fetchOwnToolImageList()
       fetchOwnToolList()
-      fetchMans()
+
     }
     $scope.hide = function () {
       $mdDialog.hide()
@@ -365,7 +373,7 @@ app.controller('userController', function ($scope, $mdDialog, $http) {
             selected_item: selected_item,
             selected_status: selected_status,
             row: row,
-            NuriboxVectorSet: NuriboxTestSetOrg[order], //Deliver Original Vector as NuriboxVectorSet is getting manipulated
+            NuriboxVectorSet: NuriboxTestSet, //Deliver Original Vector as NuriboxVectorSet is getting manipulated
             second_filtering_result: selected_status == NuriboxList.STATUS_SECOND_SELECTED ||
               selected_status == NuriboxList.STATUS_FIRST_NEED ? selected_item.result.slice(0) : undefined,
             highestValueIndex: selected_item.highestValueIndex
@@ -579,36 +587,12 @@ var NuriboxList = {
 }
 
 // This Test Set has to be real data to be filled in
-var NuriboxTestSetOrg = [
+var NuriboxTestSetOrg =
   [
     [1, 1, 1, 0, 1, '전사 헤드기어', 1, '챌린저어린이집'], // [4] goodsno, [5] goodsnm, [6] tool_features, [7] 어린이집 이름
     [0, 0, 1, 0, 2, '야구 헤드기어', 2, 'A어린이집'],
     [1, 1, 1, 1, 3, '병원놀이', 2, 'B어린이집'],
     [1, 0, 0, 1, 4, '리얼성교육 인형', 8, 'C어린이집']
-  ],
-  [
-    [1, 1, 1, 0, 1, '전사 헤드기어', 1, '챌린저어린이집'],
-    [0, 1, 0, 0, 5, '실전성교육 인형', 11, 'A어린이집'],
-    [0, 0, 0, 1, 14, '미용놀이교구', 14, 'B어린이집'],
-    [0, 0, 1, 1, 16, '밴드결성', 4, 'C어린이집']
-  ],
-  [
-    [1, 1, 1, 0, 1, '전사 헤드기어', 1, '챌린저어린이집'],
-    [1, 1, 1, 0, 18, '내 꿈은 락커', 5, 'A어린이집'],
-    [1, 0, 0, 1, 20, '강남언니', 5, 'B어린이집'],
-    [0, 0, 0, 0, 22, '강남언니 1일완성교구', 4, 'C어린이집']
-  ],
-  [
-    [1, 1, 1, 0, 24, '전사 헤드기어', 1, '챌린저어린이집'],
-    [0, 1, 1, 0, 26, '과학자는 내인생', 2, 'A어린이집'],
-    [1, 1, 0, 1, 28, '손으로 친구 올리기', 4, 'B어린이집'],
-    [1, 1, 1, 1, 30, '손으로 엄마 놀래키기', 2, 'C어린이집']
   ]
-]
 
-var NuriboxTestSet = []
 
-var resetTestSet = function () {
-  for (var i in NuriboxTestSetOrg)
-    NuriboxTestSet[i] = NuriboxTestSetOrg[i].slice(0)
-}
