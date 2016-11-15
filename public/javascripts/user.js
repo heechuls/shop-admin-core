@@ -296,21 +296,32 @@ app.controller('userController', function ($scope, $mdDialog, $http) {
         fullscreen: $scope.customFullscreen // Only for -xs, -sm breakpoints.
       })
     };
-   
+
 
 
 
     function resetTestSet() {
       $http.get(GLOBALS.API_HOME + 'get-recent-item/' + row.m_no)
         .success(function (data, status, headers, config) {
-          var tmp= makeTestSet(data);
-          for (var i=0;i<4;i++){
+          var tmp = makeTestSet(data);
+          //순서 바꾸기
+          for (var i = 0; i < tmp.length; i++) {
+            if (data.target == tmp[i][4]) {
+              //swap
+              var tmpRow = tmp[i].slice(0);
+              tmp[i] = tmp[0].slice(0);
+              tmp[0] = tmpRow;
+              break;
+            }
+          }
+
+          for (var i = 0; i < 4; i++) {
             NuriboxTestSetOrg[i] = tmp.slice(0);
           }
           for (var i in NuriboxTestSetOrg)
             NuriboxTestSet[i] = NuriboxTestSetOrg[i].slice(0)
 
-          window.alert(JSON.stringify(NuriboxTestSet));  
+
           miningNuribox();
         })
 
@@ -339,8 +350,8 @@ app.controller('userController', function ($scope, $mdDialog, $http) {
 
       return result
     }
-    function miningNuribox () {
-            NuriboxList.fetchNuriboxList($http, row.m_no, function (list) {
+    function miningNuribox() {
+      NuriboxList.fetchNuriboxList($http, row.m_no, function (list) {
         var nuribox_list = [], j = 0, order = 0, selected_status = NuriboxList.STATUS_NONE
 
         for (var i in list) {
@@ -381,7 +392,7 @@ app.controller('userController', function ($scope, $mdDialog, $http) {
             selected_item: selected_item,
             selected_status: selected_status,
             row: row,
-            NuriboxVectorSet: NuriboxTestSet, //Deliver Original Vector as NuriboxVectorSet is getting manipulated
+            NuriboxVectorSet: NuriboxTestSetOrg[order], //Deliver Original Vector as NuriboxVectorSet is getting manipulated
             second_filtering_result: selected_status == NuriboxList.STATUS_SECOND_SELECTED ||
               selected_status == NuriboxList.STATUS_FIRST_NEED ? selected_item.result.slice(0) : undefined,
             highestValueIndex: selected_item.highestValueIndex

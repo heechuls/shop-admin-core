@@ -144,13 +144,14 @@ router.get('/get-recent-item/:userno', function (req, res) {
 		} else {
 			var mems = rows;
 			var tmp={};
+			tmp.target = rows[0].goodsno;
 			tmp.mems = rows;
 			db.query('SELECT goodsno,is_order,return_type,m_no FROM gd_n_nuribox_item WHERE m_no IN (SELECT m_no FROM gd_n_nuribox_item WHERE m_no <> ' + userno + ' AND goodsno=(SELECT goodsno FROM gd_n_nuribox_item WHERE m_no = ' + userno + ' AND is_order=1 LIMIT 1) GROUP BY m_no) AND goodsno IN (SELECT goodsno FROM gd_n_nuribox_item WHERE m_no= ' + mems[0].m_no + ' ORDER BY is_order) ORDER BY m_no, goodsno', function (err, rows, fields) {
 				if (err) {
 					console.log(new Date());
 					console.log("error!!!!!!!" + err);
 				} else {
-			
+					
 					tmp.datas= rows;
 					db.query('SELECT gd_n_nuribox_item.goodsno, gd_goods.goodsnm,tool_features FROM gd_n_nuribox_item LEFT JOIN gd_goods ON gd_n_nuribox_item.goodsno =gd_goods.goodsno WHERE m_no= ' + mems[0].m_no + ' GROUP BY goodsno ORDER BY gd_n_nuribox_item.goodsno', function (err, rows, fields) {
 						if (err) {
