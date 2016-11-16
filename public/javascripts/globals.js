@@ -19,7 +19,17 @@ var GLOBALS = {
         retVal += (feature_flag & this.TOOL_FEATURE_PRICE) == this.TOOL_FEATURE_PRICE ? "가격 " : "";
         retVal += (feature_flag & this.TOOL_FEATURE_SAFETY) == this.TOOL_FEATURE_SAFETY ? "안전" : "";
         
+        if(retVal == "")
+            retVal = "없음";
         return retVal;
+    },
+    getOrderText : function(order){
+        if(order == 1)
+            return "첫번째";
+        else if(order == 2)
+            return "두번째";
+        else if(order == 3)
+            return "세번째";
     }
 };
 

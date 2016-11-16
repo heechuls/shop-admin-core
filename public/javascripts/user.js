@@ -279,7 +279,7 @@ app.controller('userController', function ($scope, $mdDialog, $http) {
     /*        NuriboxList.isThirdFiltered($http, 3, 2, function(result){
                 console.log(result)
             });*/
-    $scope.showNuriboxDetail = function (nuribox_item, ev) {
+    $scope.showNuriboxDetail = function (nuribox_item, popup_level, ev) {
       if (nuribox_item.selected_status == NuriboxList.STATUS_NEXT_SELECTED ||
         nuribox_item.selected_status == NuriboxList.STATUS_NONE ||
         nuribox_item.selected_status == NuriboxList.STATUS_FIRST_OWN
@@ -292,7 +292,8 @@ app.controller('userController', function ($scope, $mdDialog, $http) {
         parent: angular.element(document.body),
         locals: {
           showNuribox: showNuribox,
-          nuribox_item
+          nuribox_item,
+          popup_level
         },
         targetEvent: ev,
         clickOutsideToClose: true,
@@ -411,13 +412,13 @@ app.controller('userController', function ($scope, $mdDialog, $http) {
             NuriboxVectorSet: NuriboxTestSetOrg[order], //Deliver Original Vector as NuriboxVectorSet is getting manipulated
             second_filtering_result: selected_status == NuriboxList.STATUS_SECOND_SELECTED ||
               selected_status == NuriboxList.STATUS_FIRST_NEED ? selected_item.result.slice(0) : undefined,
-            highestValueIndex: selected_item.highestValueIndex
+            initialHighestValueIndex: selected_item.highestValueIndex
           }
 
           if (selected_status == NuriboxList.STATUS_SECOND_SELECTED) { // Third Filtering
-            if(nuribox_item.selected_item.tool_features > 0) //only when tool features are set
+       //     if(nuribox_item.selected_item.tool_features > 0) //only when tool features are set
               thirdFiltering($scope, $http, row.m_no, i, NuriboxTestSet[j], nuribox_item, 1)
-            j++
+            j++;
           }
           nuribox_list.push(nuribox_item)
         }
@@ -456,13 +457,14 @@ app.controller('userController', function ($scope, $mdDialog, $http) {
         },
         function (param) {
           if (param.count != 1) // When third filtering triggered, then replace the current second filtered item
-            param.$scope.Nuribox[param.index] = param.nuribox_item
+            param.$scope.Nuribox[param.index] = param.nuribox_item;
         })
     }
 
     var thirdFilteringPromise = function ($scope, $http, m_no, index, NuriboxVectorSet, nuribox_item, count) {
       return new Promise(function (resolve, reject) {
         NuriboxList.isThirdFiltered($http, m_no, nuribox_item.selected_item.tool_features, nuribox_item, function (result) {
+          nuribox_item.third_filtering_count = count;
           if (count == 3) {
             reject({ $scope, nuribox_item, index, count })
             return
@@ -474,14 +476,21 @@ app.controller('userController', function ($scope, $mdDialog, $http) {
       })
     }
   }
-  function NuriboxDetailDialogController($scope, $mdDialog, $http, showNuribox, nuribox_item) {
+  function NuriboxDetailDialogController($scope, $mdDialog, $http, showNuribox, nuribox_item, popup_level) {
 
     $scope.kidsSchoolNames = [nuribox_item.NuriboxVectorSet[0][7], nuribox_item.NuriboxVectorSet[1][7], nuribox_item.NuriboxVectorSet[2][7], nuribox_item.NuriboxVectorSet[3][7]];
     $scope.itemNames = [nuribox_item.NuriboxVectorSet[0][5], nuribox_item.NuriboxVectorSet[1][5], nuribox_item.NuriboxVectorSet[2][5], nuribox_item.NuriboxVectorSet[3][5]];
     $scope.result = nuribox_item.second_filtering_result;
     $scope.NuriboxVectorSet = nuribox_item.NuriboxVectorSet;
-    $scope.highestValueIndex = nuribox_item.highestValueIndex;
+    $scope.initialHighestValueIndex = nuribox_item.initialHighestValueIndex; //2nd Filtering Pick
+    $scope.finalHighestValueIndex = nuribox_item.selected_item.highestValueIndex; //3rd Filtering Pick
+    $scope.show = false;
+    $scope.third_filtering_count = GLOBALS.getOrderText(nuribox_item.third_filtering_count);
 
+    if(popup_level == 3){
+      $scope.returnReason = GLOBALS.getListToolFeatures(nuribox_item.selected_item.tool_features);
+      $scope.show = true;
+    }
     $scope.getPurchaseStatusText = function (value) {
       return value == 1 ? "구매" : "반송";
     }

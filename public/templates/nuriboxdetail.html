@@ -113,8 +113,15 @@
             <h5>{{itemNames[0]}} - {{itemNames[1]}} = {{result[1]}}</h5>
             <h5>{{itemNames[0]}} - {{itemNames[2]}} = {{result[2]}}</h5>
             <h5>{{itemNames[0]}} - {{itemNames[3]}} = {{result[3]}}</h5>
-            <h5>이므로, {{itemNames[0]}}는 {{itemNames[highestValueIndex]}} Similarity가 가장 높음. → 추천</h5>
+            <h5>이므로, {{itemNames[0]}}는 {{itemNames[initialHighestValueIndex]}} Similarity가 가장 높음. → 추천</h5>
             <br/>
+
+            <div id='third_filtering_text' ng-show="show">
+                <h5><3차 필터링 최종 결과></h5>
+                <h5>- 유저 반송 사유 : {{returnReason}}</h5>
+                <h5>- 2차 필터링 최종 결과 : {{itemNames[initialHighestValueIndex]}} - {{returnReason}} - 구매확률 5%</h5>
+                <h5>- 3차 필터링 최종 결과 : {{itemNames[finalHighestValueIndex]}} - {{third_filtering_count}} Similarity 제품으로 결정 - 구매확률 70%</h5>
+            </div>
 
             <md-dialog-actions layout="row">
                 <md-button ng-click="close()">
