@@ -415,7 +415,8 @@ app.controller('userController', function ($scope, $mdDialog, $http) {
           }
 
           if (selected_status == NuriboxList.STATUS_SECOND_SELECTED) { // Third Filtering
-            thirdFiltering($scope, $http, row.m_no, i, NuriboxTestSet[j], nuribox_item, 1)
+            if(nuribox_item.selected_item.tool_features > 0) //only when tool features are set
+              thirdFiltering($scope, $http, row.m_no, i, NuriboxTestSet[j], nuribox_item, 1)
             j++
           }
           nuribox_list.push(nuribox_item)
