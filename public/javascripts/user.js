@@ -4,7 +4,8 @@ app.controller('userController', function ($scope, $mdDialog, $http) {
   var ctList = []
   var NuriboxTestSet = []
   var NuriboxTestSetOrg = []
-  var testDummy = [];
+
+
   function createRandomItem() {
     var registeredDate = '2016.09.15',
       kidsSchoolName = nameList[Math.floor(Math.random() * 4)],
@@ -131,7 +132,8 @@ app.controller('userController', function ($scope, $mdDialog, $http) {
       for (var i in response.data) {
         var data = {
           nuribox_own_no: response.data[i].nuribox_own_no,
-          nuribox_own_image_url: response.data[i].nuribox_own_image_url
+          nuribox_own_image_url: response.data[i].nuribox_own_image_url,
+          nuribox_own_category_no:response.data[i].nuribox_own_category_no
         }
         dataSet.push(data)
       }
@@ -301,13 +303,23 @@ app.controller('userController', function ($scope, $mdDialog, $http) {
 
 
 
-    function resetTestSet(mno) {
-          miningNuribox();
+    function resetTestSet() {
+      NuriboxList.fetchNuriboxList($http, row.m_no, function (list) {
+        var moniter;
+        NuriboxTestSet = []
+        NuriboxTestSetOrg = []
+        var inputList = [];
+        for (var i in list) {
+          if (list[i].own_or_need != NuriboxList.NURIBOX_OWN) {
+            inputList.push(list[i])
+          }
+        }
+        getTestMatrix(0, moniter, inputList);
+      })
     }
 
     function makeTestSet(input) {
       var result = [];
-
       for (var i = 0; i < 4; i++) {
         result[i] = new Array();
         for (var j = 0; j < 4; j++) {
@@ -322,19 +334,16 @@ app.controller('userController', function ($scope, $mdDialog, $http) {
         result[i][5] = input.items[i].goodsnm;
         result[i][6] = input.items[i].tool_features;
         result[i][7] = input.mems[i].nickname;
-
       }
-
       return result
     }
-    function getList(count, result, list) {
+    //NuriboxTestSet 생성
+    function getTestMatrix(count, result, list) {
       var sno = list[count].sno;
       var mno = row.m_no;
       $http.get(GLOBALS.API_HOME + 'get-recent-item/' + mno + 'a' + sno)
         .success(function (data, status, headers, config) {
-          
           var tmp = makeTestSet(data);
-          //순서 바꾸기
           for (var i = 0; i < tmp.length; i++) {
             if (data.target == tmp[i][4]) {
               //swap
@@ -345,26 +354,22 @@ app.controller('userController', function ($scope, $mdDialog, $http) {
             }
           }
           NuriboxTestSetOrg[count] = tmp.slice(0);
-          if (count < 4) {
-            return getList(++count, result, list);
+          if (count < 3) {
+            return getTestMatrix(++count, result, list);
           } else {
-            if(4>NuriboxTestSetOrg.length){
-                NuriboxTestSetOrg = testDummy;            
-            }
             for (var i in NuriboxTestSetOrg)
               NuriboxTestSet[i] = NuriboxTestSetOrg[i].slice(0)
-            return result;
+
+            miningNuribox();
+            return 1;
           }
-        }).error(function(err){
-          window.alert("dd");
         })
     }
+
     function miningNuribox() {
       NuriboxList.fetchNuriboxList($http, row.m_no, function (list) {
-        var tmpResult;
-        getList(0,tmpResult,list);
-        var nuribox_list = [], j = 0, order = 0, selected_status = NuriboxList.STATUS_NONE
 
+        var nuribox_list = [], j = 0, order = 0, selected_status = NuriboxList.STATUS_NONE
         for (var i in list) {
           var status = '', first_filtering = '', second_filtering = '', third_filtering = '', remark, selected_item = {}, third_filtered_reason, order = j;
 
@@ -420,7 +425,7 @@ app.controller('userController', function ($scope, $mdDialog, $http) {
       })
     }
     var createNuribox = function () {
-      resetTestSet(row.m_no); // Test purpose only, this has to be replaced with the fucation brining initial vector data
+      resetTestSet(); // Test purpose only, this has to be replaced with the fucation brining initial vector data
     }
     $scope.hide = function () {
       $mdDialog.hide()

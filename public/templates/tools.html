@@ -61,16 +61,16 @@
 			</style>
 			<table class="tg">
 				<table class="tg" style="padding-top:10px; min-width:200px;">
-				<tr>
-					<th class="tg-e9v9">카테고리</th>
-					<th class="tg-e9v8">제품명</th>
-				</tr>
-				<tr ng-repeat="item in necItems">
-					<td class="tg-e9v9">{{item.nuribox_need_category_no}}</td>
-					<td class="tg-e9v8">{{item.nuribox_need_nm}}</td>
-				</tr>
+					<tr>
+						<th class="tg-e9v9">카테고리</th>
+						<th class="tg-e9v8">제품명</th>
+					</tr>
+					<tr ng-repeat="item in necItems">
+						<td class="tg-e9v9">{{item.nuribox_need_category_no}}</td>
+						<td class="tg-e9v8">{{item.nuribox_need_nm}}</td>
+					</tr>
 
-			</table>
+				</table>
 			</table>
 			<md-toolbar>
 				<div class="md-toolbar-tools">
@@ -97,7 +97,10 @@
 				}
 			</style>
 			<ul class="images" ng-repeat="image in images">
-				<li><img src={{image.nuribox_own_image_url}} width="auto" height="150px"></li>
+				<li>
+					<img src={{image.nuribox_own_image_url}} width="150px" height="150px">
+					
+				</li>
 			</ul>
 
 		</md-dialog-content>

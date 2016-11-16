@@ -140,38 +140,69 @@ router.get('/get-recent-item/:userno', function (req, res) {
 	var userno = data[0];
 	var ctno = data[1];
 	console.log(data);
-	db.query('SELECT gd_n_nuribox_item.m_no,goodsno,nickname FROM gd_n_nuribox_item LEFT JOIN gd_member ON gd_n_nuribox_item.m_no = gd_member.m_no WHERE gd_n_nuribox_item.m_no <> ' + userno + ' AND goodsno=(SELECT goodsno FROM gd_n_nuribox_item WHERE gd_n_nuribox_item.m_no = ' + userno + ' AND is_order=1 LIMIT 1) GROUP BY gd_n_nuribox_item.m_no ORDER BY gd_n_nuribox_item.m_no LIMIT 4', function (err, rows, fields) {
+	db.query('SELECT gd_n_nuribox_item.m_no,goodsno,nickname FROM gd_n_nuribox_item LEFT JOIN gd_member ON gd_n_nuribox_item.m_no = gd_member.m_no WHERE gd_n_nuribox_item.m_no <> ' + userno + ' AND goodsno=(SELECT goodsno FROM gd_n_nuribox_item WHERE gd_n_nuribox_item.m_no = ' + userno + ' AND is_order=1 AND goodsct<>' + ctno + ' ORDER BY goodsno LIMIT 1) GROUP BY gd_n_nuribox_item.m_no ORDER BY gd_n_nuribox_item.m_no LIMIT 4', function (err, rows, fields) {
 		if (err) {
 			console.log(new Date());
 			res.send(err);
 		} else {
 			var mems = rows;
-			var tmp={};
+			var tmp = {};
+			//4이하면 더미 데이터 들어감l
+			if (rows.length < 4) {
+				var memSql = 'WHERE gd_n_nuribox_item.m_no <> ' + userno + 'GROUP BY gd_member.m_no HAVING count(goodsno)>3 LIMIT 4';
+				db.query('SELECT gd_n_nuribox_item.m_no,goodsno,nickname FROM gd_n_nuribox_item LEFT JOIN gd_member ON gd_n_nuribox_item.m_no = gd_member.m_no' + memSql, function (err, rows, fields) {
+					tmp.target = rows[0].goodsno;
+					tmp.mems = rows;
+					var tmpSql = '(SELECT * FROM (SELECT m_no FROM gd_n_nuribox_item ' + memSql + ') as tmp)';
+					var itemSql = '(SELECT * FROM (SELECT goodsno FROM gd_n_nuribox_item WHERE goodsct=' + ctno + ' AND m_no= ' + tmp.mems[0].m_no + ' ORDER BY is_order LIMIT 4) as tmps)';
+					db.query('SELECT goodsno,is_order,return_type,m_no FROM gd_n_nuribox_item WHERE m_no IN' + tmpSql + ' AND goodsno IN ' + itemSql + ' ORDER BY m_no, goodsno'
+						, function (err, rows, fields) {
+							if (err) {
+								console.log(new Date());
+								console.log("error!!!!!!!" + err);
+							} else {
+
+								tmp.datas = rows;
+								db.query('SELECT gd_n_nuribox_item.goodsno, gd_goods.goodsnm,tool_features FROM gd_n_nuribox_item LEFT JOIN gd_goods ON gd_n_nuribox_item.goodsno =gd_goods.goodsno WHERE goodsct=' + ctno + ' AND m_no= ' + mems[0].m_no + ' GROUP BY goodsno ORDER BY gd_n_nuribox_item.goodsno LIMIT 4', function (err, rows, fields) {
+									if (err) {
+										console.log(new Date());
+										console.log("error!!!!!!!" + err);
+									} else {
+										tmp.items = rows;
+										console.log(tmp);
+										res.send(tmp);
+										return;
+									}
+								});
+							}
+						});
+				})
+			}
 			tmp.target = rows[0].goodsno;
 			tmp.mems = rows;
-			var tmpSql ='(SELECT * FROM (SELECT m_no FROM gd_n_nuribox_item WHERE m_no <> ' + userno + ' AND goodsno=(SELECT goodsno FROM gd_n_nuribox_item WHERE m_no = ' + userno + ' AND is_order=1 LIMIT 1) GROUP BY m_no LIMIT 4) as tmp)';
-			var itemSql ='(SELECT * FROM (SELECT goodsno FROM gd_n_nuribox_item WHERE goodsct='+ctno+' AND m_no= ' + mems[0].m_no + ' ORDER BY is_order LIMIT 4) as tmps)';
-			db.query('SELECT goodsno,is_order,return_type,m_no FROM gd_n_nuribox_item WHERE m_no IN' +tmpSql+' AND goodsno IN '+itemSql+' ORDER BY m_no, goodsno'
-			, function (err, rows, fields) {
-				if (err) {
-					console.log(new Date());
-					console.log("error!!!!!!!" + err);
-				} else {
-					
-					tmp.datas= rows;
-					db.query('SELECT gd_n_nuribox_item.goodsno, gd_goods.goodsnm,tool_features FROM gd_n_nuribox_item LEFT JOIN gd_goods ON gd_n_nuribox_item.goodsno =gd_goods.goodsno WHERE goodsct='+ctno+' AND m_no= ' + mems[0].m_no + ' GROUP BY goodsno ORDER BY gd_n_nuribox_item.goodsno LIMIT 4', function (err, rows, fields) {
-						if (err) {
-							console.log(new Date());
-							console.log("error!!!!!!!" + err);
-						} else {
-							console.log("해냈다");
-							tmp.items = rows;
-							console.log(tmp);
-							res.send(tmp);
-						}
-					});
-				}
-			});
+			var tmpSql = '(SELECT * FROM (SELECT m_no FROM gd_n_nuribox_item WHERE m_no <> ' + userno + ' AND goodsno=(SELECT goodsno FROM gd_n_nuribox_item WHERE m_no = ' + userno + ' AND is_order=1 LIMIT 1) GROUP BY m_no LIMIT 4) as tmp)';
+			var itemSql = '(SELECT * FROM (SELECT goodsno FROM gd_n_nuribox_item WHERE goodsno=' + tmp.target + ' OR (goodsct=' + ctno + ' AND m_no= ' + mems[0].m_no + ') GROUP BY goodsno ORDER BY is_order LIMIT 4) as tmps)';
+			db.query('SELECT goodsno,is_order,return_type,m_no FROM gd_n_nuribox_item WHERE m_no IN' + tmpSql + ' AND goodsno IN ' + itemSql + ' ORDER BY m_no, goodsno'
+				, function (err, rows, fields) {
+					if (err) {
+						console.log(new Date());
+						console.log("error!!!!!!!" + err);
+					} else {
+
+						tmp.datas = rows;
+						db.query('SELECT gd_n_nuribox_item.goodsno, gd_goods.goodsnm,tool_features FROM gd_n_nuribox_item LEFT JOIN gd_goods ON gd_n_nuribox_item.goodsno =gd_goods.goodsno WHERE gd_n_nuribox_item.goodsno=' + tmp.target + ' OR (goodsct=' + ctno + ' AND m_no= ' + mems[0].m_no + ') GROUP BY goodsno ORDER BY gd_n_nuribox_item.goodsno LIMIT 4', function (err, rows, fields) {
+							if (err) {
+								console.log(new Date());
+								console.log("error!!!!!!!" + err);
+							} else {
+								console.log("해냈다");
+								tmp.items = rows;
+								console.log(tmp);
+								res.send(tmp);
+							}
+						});
+					}
+				});
 		}
 	});
 });
