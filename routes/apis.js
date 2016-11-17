@@ -169,7 +169,6 @@ router.get('/get-recent-item/:userno', function (req, res) {
 										console.log("error!!!!!!!" + err);
 									} else {
 										tmp.items = rows;
-										console.log(tmp);
 										res.send(tmp);
 										return;
 									}
@@ -197,7 +196,7 @@ router.get('/get-recent-item/:userno', function (req, res) {
 							} else {
 								console.log("해냈다");
 								tmp.items = rows;
-								console.log(tmp);
+								console.log(JSON.stringify(tmp));
 								res.send(tmp);
 							}
 						});
@@ -317,18 +316,41 @@ router.get('/nuribox-list/:userno', function (req, res) {
 });
 
 //동일 반품 사유가 있는지 검색
-router.post('/return_list_with_reason', function (req, res) {
+router.get('/return_list_with_reason/:data', function (req, res) {
+	var input = (req.params.data).split("a");
+	console.log(input);
 	var data = {
-		m_no: req.body.m_no,
-		return_type: req.body.return_type,
+		m_no: input[0],
+		return_type: input[1],
 	};
-	db.query('SELECT count(*) count FROM gd_n_nuribox_item A, gd_n_nuribox B where A.nuribox_no = B.nuribox_no and B.m_no = ' + data.m_no + ' and A.return_type = ' + data.return_type, function (err, rows, fields) {
+	db.query('SELECT return_type FROM gd_n_nuribox_item WHERE return_type > 0 AND m_no = ' + data.m_no, function (err, rows, fields) {
 		if (err) {
 			console.log(new Date());
 			console.log(err);
 			res.send(err);
 		} else {
-			res.send(rows);
+			for (var i in rows) {
+				var reviewFeatures = 16;
+				var test;
+				var result = {};
+				if (0 <= (test = (rows[i].return_type - data.return_type))) {
+					while (1 <= (reviewFeatures = reviewFeatures / 2)) {
+						if(reviewFeatures==data.return_type)
+							continue;
+						if (0 < (test - reviewFeatures)) 
+							test = test - reviewFeatures;
+						else 
+							break;
+					}
+					if (test == 0) {
+						result.count = 1;
+						res.send(result);
+						return;
+					}
+				}
+			}
+			result.count = 0;
+			res.send(result);
 		}
 	});
 });

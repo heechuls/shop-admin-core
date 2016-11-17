@@ -55,7 +55,7 @@ app.controller('userController', function ($scope, $mdDialog, $http) {
       method: 'GET',
       url: GLOBALS.API_HOME + 'nec-list/' + userno
     }).then(function successCallback(response) {
-      window.alert(JSON.stringify(response));
+      
     }, function errorCallback(response) { })
   },
     $scope.fetchInitialData = function () {
@@ -282,10 +282,11 @@ app.controller('userController', function ($scope, $mdDialog, $http) {
     $scope.showNuriboxDetail = function (nuribox_item, popup_level, ev) {
       if (nuribox_item.selected_status == NuriboxList.STATUS_NEXT_SELECTED ||
         nuribox_item.selected_status == NuriboxList.STATUS_NONE ||
-        nuribox_item.selected_status == NuriboxList.STATUS_FIRST_OWN
+        nuribox_item.selected_status == NuriboxList.STATUS_FIRST_OWN 
       )
         return;
-
+      if(popup_level==3&&nuribox_item.selected_status != NuriboxList.STATUS_THIRD_SELECTED )
+        return;
       $mdDialog.show({
         controller: NuriboxDetailDialogController,
         templateUrl: 'templates/nuriboxdetail.html',
@@ -323,12 +324,13 @@ app.controller('userController', function ($scope, $mdDialog, $http) {
       var result = [];
       for (var i = 0; i < 4; i++) {
         result[i] = new Array();
+        var isOrder = 0;
         for (var j = 0; j < 4; j++) {
-          var isOrder = 0;
-          if (input.datas[j + i * 4].is_order == 1)
+          if (input.datas[i + (j * 4)].is_order == 1)
             isOrder = 1;
           else
             isOrder = 0;
+          
           result[i][j] = isOrder;
         }
         result[i][4] = input.items[i].goodsno;
@@ -369,18 +371,20 @@ app.controller('userController', function ($scope, $mdDialog, $http) {
 
     function miningNuribox() {
       NuriboxList.fetchNuriboxList($http, row.m_no, function (list) {
-
+        var first_filtering_count=0
         var nuribox_list = [], j = 0, order = 0, selected_status = NuriboxList.STATUS_NONE
         for (var i in list) {
           var status = '', first_filtering = '', second_filtering = '', third_filtering = '', remark, selected_item = {}, third_filtered_reason, order = j;
 
           if (list[i].own_or_need == NuriboxList.NURIBOX_NEED) {
             status = '필요'
+            if(first_filtering_count++ <4)
+              first_filtering = '통과'
             if (j < NuriboxList.MAX_NURIBOX_RECOMMENDED_ITEM) {
               selected_item = NuriboxList.pickClosestrNuriboxItem(NuriboxTestSet[j])
               second_filtering = selected_item.goodsnm
               selected_status = NuriboxList.STATUS_FIRST_NEED
-              j++ // Selected item counted
+              //j++ // Selected item counted
             }
             else selected_status = NuriboxList.STATUS_NEXT_SELECTED
           }
@@ -389,6 +393,8 @@ app.controller('userController', function ($scope, $mdDialog, $http) {
             first_filtering = '제거'
             selected_status = NuriboxList.STATUS_FIRST_OWN
           } else {
+            if(first_filtering_count++ <4)
+              first_filtering = '통과'
             if (j < NuriboxList.MAX_NURIBOX_RECOMMENDED_ITEM) {
               selected_item = NuriboxList.pickClosestrNuriboxItem(NuriboxTestSet[j])
               second_filtering = selected_item.goodsnm
@@ -396,7 +402,7 @@ app.controller('userController', function ($scope, $mdDialog, $http) {
             }
             else selected_status = NuriboxList.STATUS_NEXT_SELECTED
           }
-
+         
 
           var nuribox_item = {
             category: list[i].catnm,
@@ -411,14 +417,14 @@ app.controller('userController', function ($scope, $mdDialog, $http) {
             row: row,
             NuriboxVectorSet: NuriboxTestSetOrg[order], //Deliver Original Vector as NuriboxVectorSet is getting manipulated
             second_filtering_result: selected_status == NuriboxList.STATUS_SECOND_SELECTED ||
-              selected_status == NuriboxList.STATUS_FIRST_NEED ? selected_item.result.slice(0) : undefined,
+            selected_status == NuriboxList.STATUS_FIRST_NEED ? selected_item.result.slice(0) : undefined,
             initialHighestValueIndex: selected_item.highestValueIndex
           }
-
-          if (selected_status == NuriboxList.STATUS_SECOND_SELECTED) { // Third Filtering
-       //     if(nuribox_item.selected_item.tool_features > 0) //only when tool features are set
+          
+          if (selected_status == NuriboxList.STATUS_SECOND_SELECTED||selected_status == NuriboxList.STATUS_FIRST_NEED) { // Third Filtering
+              //if(nuribox_item.selected_item.tool_features > 0) //only when tool features are set
               thirdFiltering($scope, $http, row.m_no, i, NuriboxTestSet[j], nuribox_item, 1)
-            j++;
+              j++;
           }
           nuribox_list.push(nuribox_item)
         }
@@ -443,8 +449,10 @@ app.controller('userController', function ($scope, $mdDialog, $http) {
     $scope.createNuribox = createNuribox
 
     var thirdFiltering = function ($scope, $http, m_no, index, NuriboxVectorSet, nuribox_item, count) {
+      
       thirdFilteringPromise($scope, $http, m_no, index, NuriboxVectorSet, nuribox_item, count)
         .then(function (param) {
+         
           NuriboxVectorSet[param.nuribox_item.selected_item.highestValueIndex] = undefined
           param.nuribox_item.remark = NuriboxList.getStatusText(NuriboxList.STATUS_THIRD_SELECTED, param.nuribox_item.selected_item.tool_features)
           param.nuribox_item.selected_item = NuriboxList.pickClosestrNuriboxItem(NuriboxVectorSet)
@@ -618,19 +626,16 @@ var NuriboxList = {
   },
   isThirdFiltered: function ($http, m_no, return_type, nuribox_item, done) {
     $http({
-      method: 'POST',
-      url: GLOBALS.API_HOME + 'return_list_with_reason/',
-      data: {
-        m_no: m_no,
-        return_type: return_type
-      }
+      method: 'GET',
+      url: GLOBALS.API_HOME + 'return_list_with_reason/' + m_no+"a"+return_type
     }).then(function successCallback(response) {
       if (done != null)
-        return done(response.data[0].count > 0 ? true : false)
-    }, function errorCallback(response) {
-      if (done != null)
+        return done(response.data.count > 0 ? true : false)
+    }, function errorCallback(response) { 
+        if (done != null)
         return done(false)
-    })
+    })  
+    
   }
 }
 
