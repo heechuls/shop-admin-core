@@ -94,6 +94,20 @@ router.get('/userinfo/:userno', function (req, res) {
 		}
 	});
 });
+//get username
+router.get('/get-name/:userno', function (req, res) {
+	var userno = req.params.userno;
+
+	db.query('SELECT nickname FROM gd_member WHERE m_no = ' + userno, function (err, rows, fields) {
+		if (err) {
+			console.log(new Date());
+			console.log(err);
+			res.send(err);
+		} else {
+			res.send(rows);
+		}
+	});
+});
 
 //어린이집 전체 목록
 router.get('/user-list-all', function (req, res) {
@@ -329,10 +343,12 @@ router.get('/return_list_with_reason/:data', function (req, res) {
 			console.log(err);
 			res.send(err);
 		} else {
+			var result = {count:0};
 			for (var i in rows) {
 				var reviewFeatures = 16;
 				var test;
-				var result = {};
+				
+			
 				if (0 <= (test = (rows[i].return_type - data.return_type))) {
 					while (1 <= (reviewFeatures = reviewFeatures / 2)) {
 						if(reviewFeatures==data.return_type)
