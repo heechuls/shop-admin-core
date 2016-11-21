@@ -1,6 +1,6 @@
 var app = angular.module('shopAdminCore')
 app.controller('userController', function ($scope, $mdDialog, $http) {
-  var nameList = ['피오나어린이집', '비구스어린이집', '현대몬테소리', '보성어린이집', '슈렉어린이집']
+  var nameList = [];
   var ctList = []
   var NuriboxTestSet = []
   var NuriboxTestSetOrg = []
@@ -32,6 +32,8 @@ app.controller('userController', function ($scope, $mdDialog, $http) {
   function convertData(response) {
     var dataSet = []
     for (var i in response.data) {
+      if(response.data[i].m_no<3)
+        continue;
       var data = {
         m_no: response.data[i].m_no,
         registeredDate: response.data[i].regdt.substring(0, 10),
@@ -168,7 +170,8 @@ app.controller('userController', function ($scope, $mdDialog, $http) {
 
 
 
-    $scope.items
+    $scope.items;
+    $scope.ctList;
     function fetchOwnToolList() {
 
       $http.get(GLOBALS.API_HOME + 'get-items/' + row.m_no)
@@ -326,6 +329,9 @@ app.controller('userController', function ($scope, $mdDialog, $http) {
     }
 
     function makeTestSet(input) {
+
+      if (input.datas.length != 16)
+        return undefined;
       var result = [];
       for (var i = 0; i < 4; i++) {
         result[i] = new Array();
@@ -352,10 +358,14 @@ app.controller('userController', function ($scope, $mdDialog, $http) {
       $http.get(GLOBALS.API_HOME + 'get-recent-item/' + mno + 'a' + sno)
         .success(function (data, status, headers, config) {
           var tmp = makeTestSet(data);
+          if (tmp == undefined||tmp.length<4||tmp[0].length<8)
+            return;
 
           for (var i = 0; i < tmp.length; i++) {
             if (data.target == tmp[i][4]) {
               //swap
+              if (i == 0)
+                break;
 
               var tmpRow1 = tmp[i].slice(0, 4);
               var tmpRow2 = tmp[0].slice(0, 4);
@@ -367,6 +377,7 @@ app.controller('userController', function ($scope, $mdDialog, $http) {
               var tmpItem = tmp[0][5];
               tmp[0][5] = tmp[i][5]
               tmp[i][5] = tmpItem;
+
               break;
             }
 
@@ -376,11 +387,12 @@ app.controller('userController', function ($scope, $mdDialog, $http) {
             return getTestMatrix(++count, result, list);
           } else {
             for (var i in NuriboxTestSetOrg)
-              NuriboxTestSet[i] = NuriboxTestSetOrg[i].slice(0)
-
+            NuriboxTestSet[i] = NuriboxTestSetOrg[i].slice(0)
             miningNuribox();
             return 1;
           }
+        }).error(function(err){
+          console.log("error: "+err);
         })
     }
 
@@ -398,6 +410,7 @@ app.controller('userController', function ($scope, $mdDialog, $http) {
             if (j < NuriboxList.MAX_NURIBOX_RECOMMENDED_ITEM) {
               selected_item = NuriboxList.pickClosestrNuriboxItem(NuriboxTestSet[j])
               second_filtering = selected_item.goodsnm
+              third_filtered_reason = selected_item.tool_features;
               selected_status = NuriboxList.STATUS_FIRST_NEED
               //j++ // Selected item counted
             }
@@ -413,6 +426,7 @@ app.controller('userController', function ($scope, $mdDialog, $http) {
             if (j < NuriboxList.MAX_NURIBOX_RECOMMENDED_ITEM) {
               selected_item = NuriboxList.pickClosestrNuriboxItem(NuriboxTestSet[j])
               second_filtering = selected_item.goodsnm
+              third_filtered_reason = selected_item.tool_features;
               selected_status = NuriboxList.STATUS_SECOND_SELECTED
             }
             else selected_status = NuriboxList.STATUS_NEXT_SELECTED
@@ -425,8 +439,9 @@ app.controller('userController', function ($scope, $mdDialog, $http) {
             first_filtering: first_filtering,
             second_filtering: second_filtering,
             third_filtering: third_filtering,
+            third_filtered_reason: third_filtered_reason,
             nuribox: (selected_item != undefined ? selected_item.goodsnm : ''),
-            remark: NuriboxList.getStatusText(selected_status, selected_item.tool_features),
+            remark: NuriboxList.getStatusText(selected_status, third_filtered_reason),
             selected_item: selected_item,
             selected_status: selected_status,
             row: row,
@@ -469,7 +484,7 @@ app.controller('userController', function ($scope, $mdDialog, $http) {
         .then(function (param) {
 
           NuriboxVectorSet[param.nuribox_item.selected_item.highestValueIndex] = undefined
-          param.nuribox_item.remark = NuriboxList.getStatusText(NuriboxList.STATUS_THIRD_SELECTED, param.nuribox_item.selected_item.tool_features)
+          param.nuribox_item.remark = NuriboxList.getStatusText(NuriboxList.STATUS_THIRD_SELECTED, param.nuribox_item.third_filtered_reason)
           param.nuribox_item.selected_item = NuriboxList.pickClosestrNuriboxItem(NuriboxVectorSet)
           param.nuribox_item.third_filtering = param.nuribox_item.selected_item.goodsnm
           param.nuribox_item.selected_status = NuriboxList.STATUS_THIRD_SELECTED
@@ -509,9 +524,8 @@ app.controller('userController', function ($scope, $mdDialog, $http) {
     $scope.finalHighestValueIndex = nuribox_item.selected_item.highestValueIndex; //3rd Filtering Pick
     $scope.show = false;
     $scope.third_filtering_count = GLOBALS.getOrderText(nuribox_item.third_filtering_count);
-
     if (popup_level == 3) {
-      $scope.returnReason = GLOBALS.getListToolFeatures(nuribox_item.selected_item.tool_features);
+      $scope.returnReason = GLOBALS.getListToolFeatures(nuribox_item.third_filtered_reason);
       $scope.show = true;
     }
     $scope.getPurchaseStatusText = function (value) {
@@ -625,13 +639,13 @@ var NuriboxList = {
       case this.STATUS_NONE:
         return ''
       case this.STATUS_FIRST_OWN:
-        return ''
+        return '1차 필터링 - 보유 제거'
       case this.STATUS_FIRST_NEED:
-        return '필요교구 우선'
+        return '1차 필터링 - 통과, 2차 필터링 - 알고리즘 적용'
       case this.STATUS_SECOND_SELECTED:
-        return '2차필터링 - 알고리즘 적용'
+        return '1차 필터링 - 통과, 2차필터링 - 알고리즘 적용'
       case this.STATUS_THIRD_SELECTED:
-        return '3차필터링 - ' + GLOBALS.getListToolFeatures(third_reason)
+        return '1차 필터링 - 통과, - 2차 필터링 - 알고리즘 적용, 3차 필터링 - ' + GLOBALS.getListToolFeatures(third_reason)
       case this.STATUS_NEXT_SELECTED:
         return '다음 누리박스에 적용'
     }

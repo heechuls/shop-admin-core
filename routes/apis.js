@@ -154,48 +154,19 @@ router.get('/get-recent-item/:userno', function (req, res) {
 	var userno = data[0];
 	var ctno = data[1];
 	console.log(data);
-	db.query('SELECT gd_n_nuribox_item.m_no,goodsno,nickname FROM gd_n_nuribox_item LEFT JOIN gd_member ON gd_n_nuribox_item.m_no = gd_member.m_no WHERE gd_n_nuribox_item.m_no <> ' + userno + ' AND goodsno=(SELECT goodsno FROM gd_n_nuribox_item WHERE gd_n_nuribox_item.m_no = ' + userno + ' AND is_order=1 AND goodsct<>' + ctno + ' ORDER BY goodsno LIMIT 1) GROUP BY gd_n_nuribox_item.m_no ORDER BY gd_n_nuribox_item.m_no LIMIT 4', function (err, rows, fields) {
+	var targetGood='(SELECT goodsno FROM gd_n_nuribox_item WHERE gd_n_nuribox_item.m_no = ' + userno + ' AND is_order=1 AND goodsct<>' + ctno + ' ORDER BY goodsno LIMIT 1)';
+	db.query('SELECT gd_n_nuribox_item.m_no,goodsno,nickname FROM gd_n_nuribox_item LEFT JOIN gd_member ON gd_n_nuribox_item.m_no = gd_member.m_no WHERE gd_n_nuribox_item.m_no <> ' + userno + ' AND goodsno='
+	+targetGood+' AND is_order>0 GROUP BY gd_n_nuribox_item.m_no ORDER BY is_order, gd_n_nuribox_item.m_no LIMIT 4', function (err, rows, fields) {
 		if (err) {
 			console.log(new Date());
 			res.send(err);
 		} else {
-			var mems = rows;
 			var tmp = {};
-			//4이하면 더미 데이터 들어감l
-			if (rows.length < 4) {
-				var memSql = 'WHERE gd_n_nuribox_item.m_no <> ' + userno + 'GROUP BY gd_member.m_no HAVING count(goodsno)>3 LIMIT 4';
-				db.query('SELECT gd_n_nuribox_item.m_no,goodsno,nickname FROM gd_n_nuribox_item LEFT JOIN gd_member ON gd_n_nuribox_item.m_no = gd_member.m_no' + memSql, function (err, rows, fields) {
-					tmp.target = rows[0].goodsno;
-					tmp.mems = rows;
-					var tmpSql = '(SELECT * FROM (SELECT m_no FROM gd_n_nuribox_item ' + memSql + ') as tmp)';
-					var itemSql = '(SELECT * FROM (SELECT goodsno FROM gd_n_nuribox_item WHERE goodsct=' + ctno + ' AND m_no= ' + tmp.mems[0].m_no + ' ORDER BY is_order LIMIT 4) as tmps)';
-					db.query('SELECT goodsno,is_order,return_type,m_no FROM gd_n_nuribox_item WHERE m_no IN' + tmpSql + ' AND goodsno IN ' + itemSql + ' ORDER BY m_no, goodsno'
-						, function (err, rows, fields) {
-							if (err) {
-								console.log(new Date());
-								console.log("error!!!!!!!" + err);
-							} else {
-
-								tmp.datas = rows;
-								db.query('SELECT gd_n_nuribox_item.goodsno, gd_goods.goodsnm,tool_features FROM gd_n_nuribox_item LEFT JOIN gd_goods ON gd_n_nuribox_item.goodsno =gd_goods.goodsno WHERE goodsct=' + ctno + ' AND m_no= ' + mems[0].m_no + ' GROUP BY goodsno ORDER BY gd_n_nuribox_item.goodsno LIMIT 4', function (err, rows, fields) {
-									if (err) {
-										console.log(new Date());
-										console.log("error!!!!!!!" + err);
-									} else {
-										tmp.items = rows;
-										res.send(tmp);
-										return;
-									}
-								});
-							}
-						});
-				})
-			}
 			tmp.target = rows[0].goodsno;
 			tmp.mems = rows;
-			var tmpSql = '(SELECT * FROM (SELECT m_no FROM gd_n_nuribox_item WHERE m_no <> ' + userno + ' AND goodsno=(SELECT goodsno FROM gd_n_nuribox_item WHERE m_no = ' + userno + ' AND is_order=1 LIMIT 1) GROUP BY m_no LIMIT 4) as tmp)';
-			var itemSql = '(SELECT * FROM (SELECT goodsno FROM gd_n_nuribox_item WHERE goodsno=' + tmp.target + ' OR (goodsct=' + ctno + ' AND m_no= ' + mems[0].m_no + ') GROUP BY goodsno ORDER BY is_order LIMIT 4) as tmps)';
-			db.query('SELECT goodsno,is_order,return_type,m_no FROM gd_n_nuribox_item WHERE m_no IN' + tmpSql + ' AND goodsno IN ' + itemSql + ' ORDER BY m_no, goodsno'
+			var memSql = '(SELECT * FROM (SELECT m_no FROM gd_n_nuribox_item WHERE m_no <> ' + userno + ' AND goodsno=(SELECT goodsno FROM gd_n_nuribox_item WHERE m_no = ' + userno + ' AND is_order=1 LIMIT 1)AND is_order>0 GROUP BY m_no ORDER BY is_order,m_no LIMIT 4) as tmp)';
+			var itemSql = '(SELECT * FROM (SELECT goodsno FROM gd_n_nuribox_item WHERE goodsno=' + tmp.target + ' OR goodsct=' + ctno + ' GROUP BY goodsno LIMIT 4) as tmps)';
+			db.query('SELECT goodsno,is_order,return_type,m_no FROM gd_n_nuribox_item WHERE m_no IN' + memSql + ' AND goodsno IN ' + itemSql + ' ORDER BY m_no, goodsno'
 				, function (err, rows, fields) {
 					if (err) {
 						console.log(new Date());
@@ -203,12 +174,11 @@ router.get('/get-recent-item/:userno', function (req, res) {
 					} else {
 
 						tmp.datas = rows;
-						db.query('SELECT gd_n_nuribox_item.goodsno, gd_goods.goodsnm,tool_features FROM gd_n_nuribox_item LEFT JOIN gd_goods ON gd_n_nuribox_item.goodsno =gd_goods.goodsno WHERE gd_n_nuribox_item.goodsno=' + tmp.target + ' OR (goodsct=' + ctno + ' AND m_no= ' + mems[0].m_no + ') GROUP BY goodsno ORDER BY gd_n_nuribox_item.goodsno LIMIT 4', function (err, rows, fields) {
+						db.query('SELECT gd_n_nuribox_item.goodsno, gd_goods.goodsnm,tool_features FROM gd_n_nuribox_item LEFT JOIN gd_goods ON gd_n_nuribox_item.goodsno =gd_goods.goodsno WHERE gd_n_nuribox_item.goodsno=' + tmp.target + ' OR (goodsct=' + ctno + ') GROUP BY gd_n_nuribox_item.goodsno ORDER BY gd_n_nuribox_item.goodsno LIMIT 4', function (err, rows, fields) {
 							if (err) {
 								console.log(new Date());
-								console.log("error!!!!!!!" + err);
+								console.log("error~~" + err);
 							} else {
-								console.log("해냈다");
 								tmp.items = rows;
 								console.log(JSON.stringify(tmp));
 								res.send(tmp);
@@ -337,28 +307,36 @@ router.get('/return_list_with_reason/:data', function (req, res) {
 		m_no: input[0],
 		return_type: input[1],
 	};
-	db.query('SELECT return_type FROM gd_n_nuribox_item WHERE return_type > 0 AND m_no = ' + data.m_no, function (err, rows, fields) {
+	function getFeatureMatrix(data) {
+		var features = 16;
+		var itemFeatures = [0,0,0,0];
+		var count = 0;
+		while (1 <= (features = features / 2)) {
+			if (features == data.return_type) {
+				itemFeatures[count] = 1;
+				break;
+			}
+			if (0 < (data.return_type - features)) {
+				data.return_type = data.return_type - features;
+				itemFeatures[count] = 1;
+			}
+			count++;
+		}
+		return itemFeatures;
+	}
+	db.query('SELECT return_type FROM gd_n_nuribox_item WHERE return_type > 0 AND m_no = ' + data.m_no + ' GROUP BY return_type', function (err, rows, fields) {
 		if (err) {
 			console.log(new Date());
 			console.log(err);
 			res.send(err);
 		} else {
-			var result = {count:0};
+			var result = { count: 0 };;
+			var userFeatures = getFeatureMatrix(data);
+			var itemFeatures;
 			for (var i in rows) {
-				var reviewFeatures = 16;
-				var test;
-				
-			
-				if (0 <= (test = (rows[i].return_type - data.return_type))) {
-					while (1 <= (reviewFeatures = reviewFeatures / 2)) {
-						if(reviewFeatures==data.return_type)
-							continue;
-						if (0 < (test - reviewFeatures)) 
-							test = test - reviewFeatures;
-						else 
-							break;
-					}
-					if (test == 0) {
+				itemFeatures = getFeatureMatrix(rows[i]);
+				for (var i in itemFeatures) {
+					if (itemFeatures[i] == 1 && userFeatures[i] == 1) {
 						result.count = 1;
 						res.send(result);
 						return;
